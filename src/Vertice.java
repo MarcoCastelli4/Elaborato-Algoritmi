@@ -1,18 +1,21 @@
 import java.lang.Math;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Vertice {
 
-	private float peso;
 	private boolean ostacolo;
+	private int x;
+	private int y;
 	
-	public Vertice(float peso, boolean ostacolo) {
-		if(peso!= 1 && peso!=Math.sqrt(2) )
-			throw new IllegalArgumentException();
-		else {
-			this.peso=peso;
+	// lista di adiacenza di ogni vertice
+	private Map<Vertice,Float> lista_adiacenza = new HashMap<>();
+	 
+	public Vertice(int x,int y, boolean ostacolo) {
+			this.setX(x);
+			this.setY(y);
 			this.ostacolo=false;
-		}
-		
+	
 	}
 	public boolean isOstacolo() {
 		return ostacolo;
@@ -22,13 +25,28 @@ public class Vertice {
 		this.ostacolo = ostacolo;
 	}
 
-	public float getPeso() {
-		return peso;
+	public void printListaAdiacenza() {
+		
+		lista_adiacenza.forEach((key, value) -> System.out.println(key.getX() + key.getY() + " " + value));
 	}
-
-	public void setPeso(float peso) {
-		this.peso = peso;
+	public void addVerticeAdiacente(Vertice vertice,float peso) {
+		this.lista_adiacenza.put(vertice,peso);
 	}
+	
+	public int getX() {
+		return x;
+	}
+	public void setX(int x) {
+		this.x = x;
+	}
+	public int getY() {
+		return y;
+	}
+	public void setY(int y) {
+		this.y = y;
+	}
+	
+	
 	
 	
 }
