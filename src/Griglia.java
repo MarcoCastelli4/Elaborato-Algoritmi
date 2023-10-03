@@ -4,14 +4,17 @@ import java.lang.Math;
 public class Griglia {
 	private Vertice[][] G;
 	private Dimensioni dimensioni;
-	
+	private int numero_ostacoli_MAX;
+	private int numero_ostacoli;
 	
 	public Griglia(Dimensioni dimensioni, float percentuale_celle_attraversabili, float fattore_agglomerazione_ostacoli) {
 		if(percentuale_celle_attraversabili<0.0 || percentuale_celle_attraversabili>1.0 || fattore_agglomerazione_ostacoli<0.0 || fattore_agglomerazione_ostacoli>1.0)
 			throw new IllegalArgumentException();
 		else {
 			this.dimensioni= new Dimensioni(dimensioni.getRighe(),dimensioni.getColonne());
+			this.numero_ostacoli_MAX=(int) (dimensioni.getRighe()*dimensioni.getColonne()*(1.0-percentuale_celle_attraversabili));
 			G=generatoreGriglia(dimensioni,percentuale_celle_attraversabili,fattore_agglomerazione_ostacoli);
+			this.numero_ostacoli=0;
 		}
 	}
 
@@ -33,8 +36,12 @@ public class Griglia {
     // Posiziona agglomerato di ostacoli nelle celle vicine
     private void placeObstacleCluster(int row, int col) {
     	Random random = new Random();
-        int clusterSize = 2 + random.nextInt(4); // Dimensione del cluster casuale (da 2 a 5)
+        int clusterSize = (int) (Math.ceil(0.02*dimensioni.getRighe()*dimensioni.getColonne()) + random.nextInt((int) Math.ceil(0.04*dimensioni.getRighe()*dimensioni.getColonne()))); // Dimensione del cluster casuale (da 2 a 5)
 
+        // la dimesnione del cluster non può sforarare il numero di celle attraversabili
+        if (clusterSize+numero_ostacoli>numero_ostacoli_MAX)
+        	clusterSize=numero_ostacoli_MAX-numero_ostacoli;
+         
         for (int i = 0; i < clusterSize; i++) {
             int xOffset = random.nextInt(3) - 1; // Valori casuali tra -1, 0 e 1
             int yOffset = random.nextInt(3) - 1;
@@ -45,9 +52,11 @@ public class Griglia {
             // Verifica se la nuova cella è valida e vuota
             if (isValidCell(newRow, newCol) && G[newRow][newCol].isOstacolo()==false) {
                 G[newRow][newCol].setOstacolo(true);
+                numero_ostacoli+=1;
             }
         }
     }
+
     private void setListaAdiacenzaVertice(int row, int col) {
         // Verifica le otto direzioni adiacenti (sopra, sotto, sinistra, destra e diagonali)
         int[][] directions = {
@@ -81,6 +90,7 @@ public class Griglia {
 		// inizializzo vertici a 
 		inizializzaGriglia();
 		
+		while(numero_ostacoli<numero_ostacoli_MAX) {
 		for (int row = 0; row < dimensioni.getRighe(); row++) {
             for (int col = 0; col < dimensioni.getColonne(); col++) {
                 // Genera un valore casuale tra 0 e 1
@@ -88,11 +98,11 @@ public class Griglia {
 
                 // Verifica se la cella deve contenere un ostacolo in base alla densità specificata
                 boolean hasObstacle = randomValue <= percentuale_ostacoli;
-
-                if (hasObstacle) {
+                
+                if (hasObstacle && numero_ostacoli<numero_ostacoli_MAX) {
                     // Posiziona l'ostacolo
                     G[row][col].setOstacolo(true);
-
+                    numero_ostacoli+=1;
                     // Agglomerazione degli ostacoli
                     if (randomValue <= percentuale_ostacoli * fattore_agglomerazione_ostacoli) {
                         // Posiziona altri ostacoli nelle celle vicine
@@ -101,11 +111,14 @@ public class Griglia {
                 }
             }
         }
+		}
+		
+		inizializza_matrice_W();
 		return G;	
 	}
 
 	// aggiorno i pesi della matrice
-	private void matriceW() {
+	private void inizializza_matrice_W() {
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
 				if (!G[i][j].isOstacolo()) {
@@ -115,6 +128,8 @@ public class Griglia {
 			}
 		}
 	}
+	
+	// stampe
 	public void printGrafo() {
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
@@ -127,20 +142,27 @@ public class Griglia {
 		}
 	}
 	
-	/*
-	public void printW() {
+	
+	public void printMatriceW() {
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
 				if (!G[i][j].isOstacolo())
-					System.out.println("Vertice "+ i + j + "-->" + G[i][j].printListaAdiacenza());
-					
+					System.out.println("Vertice r: "+ i + ", c: " + j + "-->" + G[i][j].listaAdiacenza());
 			}
 			
 		}
-	}*/
+	}
 	
 	public Vertice[][] getG(){
 		return G;
+	}
+	
+	public int getMaxOstacoli() {
+		return numero_ostacoli_MAX;
+	}
+	
+	public int getNumeroOstacoli() {
+		return numero_ostacoli;
 	}
 	
 	

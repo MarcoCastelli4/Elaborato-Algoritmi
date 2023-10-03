@@ -25,9 +25,18 @@ public class Vertice {
 		this.ostacolo = ostacolo;
 	}
 
-	public void printListaAdiacenza() {
+	public String listaAdiacenza() {
+		StringBuilder str = new StringBuilder();
+		lista_adiacenza.forEach((key, value) -> str.append("r: ")
+		        .append(key.getX())
+		        .append(", c: ")
+		        .append(key.getY())
+		        .append(", peso: ")
+		        .append(value)
+		        .append(" --> "));
 		
-		lista_adiacenza.forEach((key, value) -> System.out.println(key.getX() + key.getY() + " " + value));
+		return str.toString();
+
 	}
 	public void addVerticeAdiacente(Vertice vertice,float peso) {
 		this.lista_adiacenza.put(vertice,peso);
