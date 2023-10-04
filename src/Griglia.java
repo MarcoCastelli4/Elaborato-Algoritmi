@@ -1,3 +1,7 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.lang.Math;
 
@@ -153,17 +157,42 @@ public class Griglia {
 		}
 	}
 	
-	public Vertice[][] getG(){
-		return G;
+	// V[G]
+	public List<Vertice> verticiG (){
+		List<Vertice> res = new ArrayList<>();
+		
+		for (int i = 0; i < dimensioni.getRighe(); i++) {
+			for (int j = 0; j < dimensioni.getColonne(); j++) {
+				if(!G[i][j].isOstacolo())
+					res.add(G[i][j]);
+			}
+		}
+		return res;
 	}
-	
-	public int getMaxOstacoli() {
-		return numero_ostacoli_MAX;
+	public List<Vertice> ReachGoal(Griglia G, List<Vertice>[] percorsi_presistenti, Vertice init,Vertice goal, int max){
+		// Liste di stati
+		List<Stato> open = new ArrayList<>();
+		List<Stato> closed=new ArrayList<>();
+		
+		// Strutture dati
+		Map<Stato, Double> g= new HashMap<>();
+		
+		// Stato, Stato padre
+		Map<Stato, Stato> P= new HashMap<>();
+		
+		
+		open.add(new Stato(0,init));
+		
+		for (int t = 0; t < max; t++) {
+			for (Vertice v : G.verticiG()) {
+				g.put(new Stato(t,v), Double.POSITIVE_INFINITY);
+				P.put(new Stato(t,v), null);
+			}
+		}
+		g.put(new Stato(0,init), 0.0);
+		
+		// riga 11 TODO
+		
 	}
-	
-	public int getNumeroOstacoli() {
-		return numero_ostacoli;
-	}
-	
 	
 }
