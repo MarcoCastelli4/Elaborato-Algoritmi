@@ -17,6 +17,7 @@ public class Vertice {
 			this.ostacolo=false;
 	
 	}
+	
 	public boolean isOstacolo() {
 		return ostacolo;
 	}

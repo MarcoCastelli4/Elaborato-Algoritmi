@@ -169,6 +169,29 @@ public class Griglia {
 		}
 		return res;
 	}
+	
+	public double h(Vertice vertice, Vertice goal) {
+		
+		// algoritmo di dijkstra modificato
+		
+		List<VerticeDijkstra> vertici=new ArrayList<>();
+		
+		// inizialize single source
+		for (Vertice v : verticiG()) {
+			if(v.equals(vertice))
+				vertici.add(new VerticeDijkstra(v,0.0,null));
+			else vertici.add(new VerticeDijkstra(v,Double.POSITIVE_INFINITY,null));
+		}
+		
+		List<VerticeDijkstra> s=new ArrayList<>();
+		
+		// pagina 2
+	}
+	
+	
+   
+    		
+    		
 	public List<Vertice> ReachGoal(Griglia G, List<Vertice>[] percorsi_presistenti, Vertice init,Vertice goal, int max){
 		// Liste di stati
 		List<Stato> open = new ArrayList<>();
@@ -176,22 +199,25 @@ public class Griglia {
 		
 		// Strutture dati
 		Map<Stato, Double> g= new HashMap<>();
+		Map<Stato, Double> f= new HashMap<>();
 		
 		// Stato, Stato padre
 		Map<Stato, Stato> P= new HashMap<>();
 		
 		
-		open.add(new Stato(0,init));
+		open.add(new Stato(init,0));
 		
 		for (int t = 0; t < max; t++) {
 			for (Vertice v : G.verticiG()) {
-				g.put(new Stato(t,v), Double.POSITIVE_INFINITY);
-				P.put(new Stato(t,v), null);
+				g.put(new Stato(v,t), Double.POSITIVE_INFINITY);
+				P.put(new Stato(v,t), null);
 			}
 		}
-		g.put(new Stato(0,init), 0.0);
+		// g è il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
+		g.put(new Stato(init,0), 0.0);
 		
-		// riga 11 TODO
+		
+		f.put(new Stato(init,0), null);
 		
 	}
 	

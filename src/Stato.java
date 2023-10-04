@@ -4,7 +4,7 @@ public class Stato {
 	private int istante_temporale;
 	private Vertice vertice;
 	
-	public Stato(int istante_temporale,Vertice vertice) {
+	public Stato(Vertice vertice,int istante_temporale) {
 		setIstante_temporale(istante_temporale);
 		setVertice(vertice);
 	}
