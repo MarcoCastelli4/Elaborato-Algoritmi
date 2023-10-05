@@ -55,6 +55,13 @@ public class Vertice {
 	public void setY(int y) {
 		this.y = y;
 	}
+
+	
+	public boolean equals(Object obj) {
+	    return (getX() == ((Vertice)obj).getX() && getY() == ((Vertice)obj).getY()  && isOstacolo() == ((Vertice)obj).isOstacolo());
+	}
+
+	
 	
 	
 	

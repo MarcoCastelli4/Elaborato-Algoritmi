@@ -2,8 +2,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.lang.Math;
+
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Griglia {
 	private Vertice[][] G;
@@ -170,27 +175,17 @@ public class Griglia {
 		return res;
 	}
 	
+	
 	public double h(Vertice vertice, Vertice goal) {
 		
-		// algoritmo di dijkstra modificato
+		// distanza diagonale
+		double dx= Math.abs(vertice.getX()-goal.getX());
+		double dy= Math.abs(vertice.getY()-goal.getY());
 		
-		List<VerticeDijkstra> vertici=new ArrayList<>();
-		
-		// inizialize single source
-		for (Vertice v : verticiG()) {
-			if(v.equals(vertice))
-				vertici.add(new VerticeDijkstra(v,0.0,null));
-			else vertici.add(new VerticeDijkstra(v,Double.POSITIVE_INFINITY,null));
-		}
-		
-		List<VerticeDijkstra> s=new ArrayList<>();
-		
-		// pagina 2
+		return dx+dy + (Math.sqrt(2)-2)*Math.min(dx, dy);		
 	}
 	
-	
-   
-    		
+	    		
     		
 	public List<Vertice> ReachGoal(Griglia G, List<Vertice>[] percorsi_presistenti, Vertice init,Vertice goal, int max){
 		// Liste di stati
@@ -216,8 +211,29 @@ public class Griglia {
 		// g è il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
 		g.put(new Stato(init,0), 0.0);
 		
+		f.put(new Stato(init,0), h(init,goal));
 		
-		f.put(new Stato(init,0), null);
+		while(!open.isEmpty()) {
+			
+			Stato minStato=open.get(0);
+			double min= g.get(minStato) + h(minStato.getVertice(),goal);
+			
+			// riga 13
+			for (Stato stato : open) {
+				if(g.get(stato) + h(stato.getVertice(),goal)<min) {
+					min=g.get(stato) + h(stato.getVertice(),goal);
+					minStato=stato;
+				}
+			}
+			
+			open.remove(minStato);
+			closed.add(minStato);
+			
+			if (minStato.getVertice().equals(goal)) {
+				return //recostruct path
+			}
+		}
+		
 		
 	}
 	
