@@ -23,4 +23,8 @@ public class Stato {
 		this.vertice = vertice;
 	}
 	
-}
+	public boolean equals(Object obj) {
+	    return (getIstante_temporale() == ((Stato)obj).getIstante_temporale() && getVertice().equals(((Stato)obj).getVertice()));
+	    		
+	}
+	}

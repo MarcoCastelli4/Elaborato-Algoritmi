@@ -16,6 +16,20 @@ public class Griglia {
 	private int numero_ostacoli_MAX;
 	private int numero_ostacoli;
 	
+	// Liste di stati
+	private List<Stato> open = new ArrayList<>();
+	private List<Stato> closed=new ArrayList<>();
+			
+	// Strutture dati
+	private Map<Stato, Double> g= new HashMap<>();
+	private Map<Stato, Double> f= new HashMap<>();
+			
+	// Stato, Stato padre
+	private Map<Stato, Stato> P= new HashMap<>();
+	
+	// Percorsi degli n agenti
+	private List<Percorso> agenti=new ArrayList<>();
+	
 	public Griglia(Dimensioni dimensioni, float percentuale_celle_attraversabili, float fattore_agglomerazione_ostacoli) {
 		if(percentuale_celle_attraversabili<0.0 || percentuale_celle_attraversabili>1.0 || fattore_agglomerazione_ostacoli<0.0 || fattore_agglomerazione_ostacoli>1.0)
 			throw new IllegalArgumentException();
@@ -151,12 +165,11 @@ public class Griglia {
 		}
 	}
 	
-	
 	public void printMatriceW() {
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
 				if (!G[i][j].isOstacolo())
-					System.out.println("Vertice r: "+ i + ", c: " + j + "-->" + G[i][j].listaAdiacenza());
+					System.out.println("Vertice r: "+ i + ", c: " + j + "-->" + G[i][j].PrintlistaAdiacenza());
 			}
 			
 		}
@@ -186,20 +199,32 @@ public class Griglia {
 	}
 	
 	    		
-    		
-	public List<Vertice> ReachGoal(Griglia G, List<Vertice>[] percorsi_presistenti, Vertice init,Vertice goal, int max){
-		// Liste di stati
-		List<Stato> open = new ArrayList<>();
-		List<Stato> closed=new ArrayList<>();
+    private List<Stato> ReconstructPath(Vertice init,Vertice goal,Map<Stato,Stato>P,int t) {
+    	
+    	List<Stato> res=new ArrayList<>();
+    	
+    	// controllo che ulimto elemento di array sia il goal
+    	if(closed.get(closed.size()).equals(new Stato(goal, t)))
+    		// mettiamo il padre di goal che è all'ultima posizione
+    		res.add(P.get(closed.get(closed.size())));
+    	// ripeto fino a che non sono in init con t=0
+    	while(!res.get(res.size()).equals(new Stato(init, 0))) {
+    		//aggiungo il padre dell'ultimo elemento di res
+    		res.add(P.get(res.get(res.size())));
+    	}
+    	return res;
+    	
+    }
+
+    public List<Stato> ReachGoal(Griglia G, List<Vertice>[] percorsi_presistenti, Vertice init,Vertice goal, int max){
 		
-		// Strutture dati
-		Map<Stato, Double> g= new HashMap<>();
-		Map<Stato, Double> f= new HashMap<>();
-		
-		// Stato, Stato padre
-		Map<Stato, Stato> P= new HashMap<>();
-		
-		
+		// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
+    	for (Percorso a : agenti) {
+			if(a.getPercorso().contains(new Stato(init,0)))
+					System.err.println("Posizione iniziale agenti uguale a init");
+					return null;
+			}
+    	
 		open.add(new Stato(init,0));
 		
 		for (int t = 0; t < max; t++) {
@@ -230,11 +255,46 @@ public class Griglia {
 			closed.add(minStato);
 			
 			if (minStato.getVertice().equals(goal)) {
-				return //recostruct path
+				return ReconstructPath(init,goal,P,minStato.getIstante_temporale());
+			}
+			
+			// parte 3
+			int t=minStato.getIstante_temporale();
+			Vertice v=minStato.getVertice();
+			if (t<max) {
+				for (Vertice n : v.getListaAdiacenza().keySet()) {
+					if(!closed.contains(new Stato(n,t))) {
+						boolean traversable=true;
+						
+						for (Percorso a : agenti) {
+							if(a.getPercorso().contains(new Stato(n,t+1)) || 
+									(a.getPercorso().contains(new Stato(v,t+1)) && a.getPercorso().contains(new Stato(n,t)))) {
+								traversable=false;
+							}
+							
+							// collisione con un agente preesistente fermo nella sua cella finale
+							if(!a.getPercorso().get(a.getPercorso().size()).getVertice().equals(n))
+								traversable=false;
+						}
+						
+						// parte 4
+						if (traversable) {
+							if(g.get(minStato) + v.getListaAdiacenza().get(n) < g.get(new Stato(n,t+1))){
+								P.replace(new Stato(n,t+1), minStato);
+								g.replace(new Stato(n,t+1), g.get(minStato) + v.getListaAdiacenza().get(n));
+								
+								f.replace(new Stato(n,t+1), g.get(new Stato(n,t+1)) + h (n,goal));
+							}
+						}
+						if (!open.contains(new Stato(n,t+1))) {
+							open.add(new Stato(n,t+1));
+						}
+					}
+				}
 			}
 		}
 		
-		
+		return null;
 	}
 	
 }

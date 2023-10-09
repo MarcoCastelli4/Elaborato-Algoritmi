@@ -26,7 +26,7 @@ public class Vertice {
 		this.ostacolo = ostacolo;
 	}
 
-	public String listaAdiacenza() {
+	public String PrintlistaAdiacenza() {
 		StringBuilder str = new StringBuilder();
 		lista_adiacenza.forEach((key, value) -> str.append("r: ")
 		        .append(key.getX())
@@ -39,6 +39,12 @@ public class Vertice {
 		return str.toString();
 
 	}
+	
+	public Map<Vertice,Float> getListaAdiacenza(){
+		return this.getListaAdiacenza();
+	}
+	
+	
 	public void addVerticeAdiacente(Vertice vertice,float peso) {
 		this.lista_adiacenza.put(vertice,peso);
 	}
