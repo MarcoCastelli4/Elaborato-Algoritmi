@@ -41,7 +41,7 @@ public class Vertice {
 	}
 	
 	public Map<Vertice,Float> getListaAdiacenza(){
-		return this.getListaAdiacenza();
+		return lista_adiacenza;
 	}
 	
 	

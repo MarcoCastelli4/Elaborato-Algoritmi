@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,8 +38,8 @@ public class Griglia {
 		else {
 			this.dimensioni= new Dimensioni(dimensioni.getRighe(),dimensioni.getColonne());
 			this.numero_ostacoli_MAX=(int) (dimensioni.getRighe()*dimensioni.getColonne()*(1.0-percentuale_celle_attraversabili));
-			G=generatoreGriglia(dimensioni,percentuale_celle_attraversabili,fattore_agglomerazione_ostacoli);
 			this.numero_ostacoli=0;
+			G=generatoreGriglia(dimensioni,percentuale_celle_attraversabili,fattore_agglomerazione_ostacoli);
 		}
 	}
 
@@ -159,7 +160,7 @@ public class Griglia {
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
 				if (G[i][j].isOstacolo())
-					grafo[i][j]="O | ";
+					grafo[i][j]="# | ";
 				else grafo[i][j]="  | ";		
 			}
 		}
@@ -171,7 +172,9 @@ public class Griglia {
 				int y=p.getPercorso().get(i).getVertice().getY();
 				int t=p.getPercorso().get(i).getIstante_temporale();
 				
-				grafo[x][y]= String.format("%d",i);
+				if(G[x][y].isOstacolo())
+					System.out.println("Passo attraverso ostacolo");
+				grafo[x][y]= String.format("%d | ",t);
 			}
 		}
 		
@@ -222,32 +225,38 @@ public class Griglia {
     	
     	List<Stato> res=new ArrayList<>();
     	
-    	// controllo che ulimto elemento di array sia il goal
-    	if(closed.get(closed.size()).equals(new Stato(goal, t)))
+    	
+    	// controllo che ultimo elemento di array sia il goal
+    	if(closed.get(closed.size()-1).equals(new Stato(goal, t))) {
+    		// mettiamo il goal che è all'ultima posizione
+    		res.add(closed.get(closed.size()-1));
     		// mettiamo il padre di goal che è all'ultima posizione
-    		res.add(P.get(closed.get(closed.size())));
-    	// ripeto fino a che non sono in init con t=0
-    	while(!res.get(res.size()).equals(new Stato(init, 0))) {
-    		//aggiungo il padre dell'ultimo elemento di res
-    		res.add(P.get(res.get(res.size())));
+    		res.add(P.get(closed.get(closed.size()-1)));
     	}
+    	// ripeto fino a che non sono in init con t=0
+    	while(!res.get(res.size()-1).equals(new Stato(init, 0))) {
+    		//aggiungo il padre dell'ultimo elemento di res
+    		res.add(P.get(res.get(res.size()-1)));
+    	}
+    	Collections.reverse(res);
+    	
     	return res;
     	
     }
 
     public List<Stato> ReachGoal(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
-		
+    	   	
 		// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
     	for (Percorso a : agenti) {
-			if(a.getPercorso().contains(new Stato(init,0)))
+			if(a.getPercorso().contains(new Stato(init,0))) {
 					System.err.println("Posizione iniziale agenti uguale a init");
 					return null;
 			}
+    	}
     	
-    	//Stato tmp=new Stato(init,0);
 		open.add(new Stato(init,0));
 		
-		for (int t = 0; t < max; t++) {
+		for (int t = 0; t <= max; t++) {
 			for (Vertice v : G.verticiG()) {
 				g.put(new Stato(v,t), Double.POSITIVE_INFINITY);
 				P.put(new Stato(v,t), null);
@@ -261,8 +270,7 @@ public class Griglia {
 		while(!open.isEmpty()) {
 			
 			Stato minStato=open.get(0);
-			
-			// in g non c'è minStato pechè il get li identifica come due key diverse
+		
 			double min= g.get(minStato)+ h(minStato.getVertice(),goal);
 			
 			// riga 13
@@ -295,7 +303,7 @@ public class Griglia {
 							}
 							
 							// collisione con un agente preesistente fermo nella sua cella finale
-							if(!a.getPercorso().get(a.getPercorso().size()).getVertice().equals(n))
+							if(!a.getPercorso().get(a.getPercorso().size()-1).getVertice().equals(n))
 								traversable=false;
 						}
 						
@@ -321,16 +329,12 @@ public class Griglia {
     
    private int[] generaPunto() {
 	   // Create an instance of the Random class
-       Random random = new Random();
-
-       // Generate a random value between 0 (inclusive) and maxValueExclusive (exclusive)
-       int riga = random.nextInt(dimensioni.getRighe());
-       int colonna = random.nextInt(dimensioni.getColonne());
-       
-       while(G[riga][colonna].isOstacolo()) {
+       int riga,colonna;
+       do {
+    	   Random random = new Random();
     	   riga = random.nextInt(dimensioni.getRighe());
     	   colonna = random.nextInt(dimensioni.getColonne());
-       }
+       }while((G[riga][colonna].isOstacolo()));
        
        int[] r= {riga,colonna};
        return r;
@@ -340,24 +344,34 @@ public class Griglia {
     	
     	int max=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
     	int istanti_max = 0;
-    	
-    	for (int i = 0; i < numero_agenti; i++) {
+    	int i=0;
+
+    	while(i<numero_agenti) {
+    		Vertice init,goal;
+    		do {
     		int[] tmp=generaPunto();
-    		Vertice init=new Vertice(tmp[0],tmp[1],false);
     		
+    		init= G[tmp[0]][tmp[1]];    		
     		int[] tmp2=generaPunto();
-    		Vertice goal=new Vertice(tmp2[0],tmp2[1],false);
+    		goal=G[tmp2[0]][tmp2[1]];
+    		}while(init.equals(goal));
     		
-    		if(i==0) {
-    			percorsi.add(new Percorso(ReachGoal(this, percorsi, init, goal, max)));
+    		
+    		Percorso t;
+    		if(i==0) 
+    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max));
+    		else t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max));
+    		
+    		if(t.getPercorso()!=null) {
+    			System.out.println("Init si trova: x: "+init.getX()+ "y: "+init.getY());
+            	System.out.println("Il goal si trova: x: "+goal.getX()+ "y: "+goal.getY());
+            	
+    			percorsi.add(t);
     			istanti_max= percorsi.get(i).getPercorso().size();
+    			i++;
     		}
-    		else {
-    			percorsi.add(new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max)));
-    			if(istanti_max<percorsi.get(i).getPercorso().size())
-    				istanti_max= percorsi.get(i).getPercorso().size();
-    		}
-		}
+    			
+    	}
     	
     	return percorsi;
     }
