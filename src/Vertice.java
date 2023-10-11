@@ -66,6 +66,11 @@ public class Vertice {
 	public boolean equals(Object obj) {
 	    return (getX() == ((Vertice)obj).getX() && getY() == ((Vertice)obj).getY()  && isOstacolo() == ((Vertice)obj).isOstacolo());
 	}
+	
+	public int hashCode() {
+		int intValue = isOstacolo() ? 1 : 0;
+        return getX()*getY()*intValue;
+    }
 
 	
 	

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -28,7 +29,7 @@ public class Griglia {
 	private Map<Stato, Stato> P= new HashMap<>();
 	
 	// Percorsi degli n agenti
-	private List<Percorso> agenti=new ArrayList<>();
+	List<Percorso> percorsi =new ArrayList<Percorso>();
 	
 	public Griglia(Dimensioni dimensioni, float percentuale_celle_attraversabili, float fattore_agglomerazione_ostacoli) {
 		if(percentuale_celle_attraversabili<0.0 || percentuale_celle_attraversabili>1.0 || fattore_agglomerazione_ostacoli<0.0 || fattore_agglomerazione_ostacoli>1.0)
@@ -154,15 +155,33 @@ public class Griglia {
 	
 	// stampe
 	public void printGrafo() {
+		String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
 				if (G[i][j].isOstacolo())
-					System.out.print("O | ");
-				else System.out.print("  | ");
-					
+					grafo[i][j]="O | ";
+				else grafo[i][j]="  | ";		
+			}
+		}
+		
+		
+		for (Percorso p : percorsi) {
+			for (int i = 0; i < p.getPercorso().size(); i++) {
+				int x=p.getPercorso().get(i).getVertice().getX();
+				int y=p.getPercorso().get(i).getVertice().getY();
+				int t=p.getPercorso().get(i).getIstante_temporale();
+				
+				grafo[x][y]= String.format("%d",i);
+			}
+		}
+		
+		for (int i = 0; i < dimensioni.getRighe(); i++) {
+			for (int j = 0; j < dimensioni.getColonne(); j++) {
+				System.out.print(grafo[i][j]);
 			}
 			System.out.println();
 		}
+		
 	}
 	
 	public void printMatriceW() {
@@ -216,7 +235,7 @@ public class Griglia {
     	
     }
 
-    public List<Stato> ReachGoal(Griglia G, List<Vertice>[] percorsi_presistenti, Vertice init,Vertice goal, int max){
+    public List<Stato> ReachGoal(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
 		
 		// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
     	for (Percorso a : agenti) {
@@ -225,6 +244,7 @@ public class Griglia {
 					return null;
 			}
     	
+    	//Stato tmp=new Stato(init,0);
 		open.add(new Stato(init,0));
 		
 		for (int t = 0; t < max; t++) {
@@ -241,7 +261,9 @@ public class Griglia {
 		while(!open.isEmpty()) {
 			
 			Stato minStato=open.get(0);
-			double min= g.get(minStato) + h(minStato.getVertice(),goal);
+			
+			// in g non c'è minStato pechè il get li identifica come due key diverse
+			double min= g.get(minStato)+ h(minStato.getVertice(),goal);
 			
 			// riga 13
 			for (Stato stato : open) {
@@ -296,5 +318,48 @@ public class Griglia {
 		
 		return null;
 	}
-	
+    
+   private int[] generaPunto() {
+	   // Create an instance of the Random class
+       Random random = new Random();
+
+       // Generate a random value between 0 (inclusive) and maxValueExclusive (exclusive)
+       int riga = random.nextInt(dimensioni.getRighe());
+       int colonna = random.nextInt(dimensioni.getColonne());
+       
+       while(G[riga][colonna].isOstacolo()) {
+    	   riga = random.nextInt(dimensioni.getRighe());
+    	   colonna = random.nextInt(dimensioni.getColonne());
+       }
+       
+       int[] r= {riga,colonna};
+       return r;
+   }
+   
+   public List<Percorso> generatoreIstanze(int numero_agenti){
+    	
+    	int max=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
+    	int istanti_max = 0;
+    	
+    	for (int i = 0; i < numero_agenti; i++) {
+    		int[] tmp=generaPunto();
+    		Vertice init=new Vertice(tmp[0],tmp[1],false);
+    		
+    		int[] tmp2=generaPunto();
+    		Vertice goal=new Vertice(tmp2[0],tmp2[1],false);
+    		
+    		if(i==0) {
+    			percorsi.add(new Percorso(ReachGoal(this, percorsi, init, goal, max)));
+    			istanti_max= percorsi.get(i).getPercorso().size();
+    		}
+    		else {
+    			percorsi.add(new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max)));
+    			if(istanti_max<percorsi.get(i).getPercorso().size())
+    				istanti_max= percorsi.get(i).getPercorso().size();
+    		}
+		}
+    	
+    	return percorsi;
+    }
+	 
 }

@@ -27,4 +27,8 @@ public class Stato {
 	    return (getIstante_temporale() == ((Stato)obj).getIstante_temporale() && getVertice().equals(((Stato)obj).getVertice()));
 	    		
 	}
+	
+	public int hashCode() {
+        return getIstante_temporale()*getVertice().hashCode();
+    }
 	}
