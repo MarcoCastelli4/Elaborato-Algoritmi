@@ -19,15 +19,15 @@ public class Griglia {
 	private int numero_ostacoli;
 	
 	// Liste di stati
-	private List<Stato> open = new ArrayList<>();
-	private List<Stato> closed=new ArrayList<>();
+	private List<Stato> open;
+	private List<Stato> closed;
 			
 	// Strutture dati
-	private Map<Stato, Double> g= new HashMap<>();
-	private Map<Stato, Double> f= new HashMap<>();
+	private Map<Stato, Double> g;
+	private Map<Stato, Double> f;
 			
 	// Stato, Stato padre
-	private Map<Stato, Stato> P= new HashMap<>();
+	private Map<Stato, Stato> P;
 	
 	// Percorsi degli n agenti
 	List<Percorso> percorsi =new ArrayList<Percorso>();
@@ -165,7 +165,7 @@ public class Griglia {
 			}
 		}
 		
-		
+		int agente=0;
 		for (Percorso p : percorsi) {
 			for (int i = 0; i < p.getPercorso().size(); i++) {
 				int x=p.getPercorso().get(i).getVertice().getX();
@@ -174,8 +174,10 @@ public class Griglia {
 				
 				if(G[x][y].isOstacolo())
 					System.out.println("Passo attraverso ostacolo");
-				grafo[x][y]= String.format("%d | ",t);
+				grafo[x][y]= String.format("%d | ",agente);
+				
 			}
+			agente++;
 		}
 		
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
@@ -225,9 +227,9 @@ public class Griglia {
     	
     	List<Stato> res=new ArrayList<>();
     	
-    	
     	// controllo che ultimo elemento di array sia il goal
     	if(closed.get(closed.size()-1).equals(new Stato(goal, t))) {
+    		
     		// mettiamo il goal che è all'ultima posizione
     		res.add(closed.get(closed.size()-1));
     		// mettiamo il padre di goal che è all'ultima posizione
@@ -245,6 +247,18 @@ public class Griglia {
     }
 
     public List<Stato> ReachGoal(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
+    	
+    	// Liste di stati
+    	open = new ArrayList<>();
+    	closed=new ArrayList<>();
+    			
+    	// Strutture dati
+    	g= new HashMap<>();
+    	f= new HashMap<>();
+    			
+    	// Stato, Stato padre
+    	P= new HashMap<>();
+    	
     	   	
 		// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
     	for (Percorso a : agenti) {
@@ -303,7 +317,7 @@ public class Griglia {
 							}
 							
 							// collisione con un agente preesistente fermo nella sua cella finale
-							if(!a.getPercorso().get(a.getPercorso().size()-1).getVertice().equals(n))
+							if(a.getPercorso().get(a.getPercorso().size()-1).getVertice().equals(n))
 								traversable=false;
 						}
 						
@@ -348,6 +362,7 @@ public class Griglia {
 
     	while(i<numero_agenti) {
     		Vertice init,goal;
+    		
     		do {
     		int[] tmp=generaPunto();
     		
@@ -357,17 +372,22 @@ public class Griglia {
     		}while(init.equals(goal));
     		
     		
+    		
+    		
     		Percorso t;
     		if(i==0) 
     			t=new Percorso(ReachGoal(this, percorsi, init, goal, max));
-    		else t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max));
+    		else {
+    			
+        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max));
+    		}
     		
     		if(t.getPercorso()!=null) {
     			System.out.println("Init si trova: x: "+init.getX()+ "y: "+init.getY());
             	System.out.println("Il goal si trova: x: "+goal.getX()+ "y: "+goal.getY());
             	
     			percorsi.add(t);
-    			istanti_max= percorsi.get(i).getPercorso().size();
+    			istanti_max= percorsi.get(i).getPercorso().size()-1;
     			i++;
     		}
     			
