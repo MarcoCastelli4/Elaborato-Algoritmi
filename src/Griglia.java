@@ -83,9 +83,9 @@ public class Griglia {
     }
 
     private void setListaAdiacenzaVertice(int row, int col) {
-        // Verifica le otto direzioni adiacenti (sopra, sotto, sinistra, destra e diagonali)
+        // Verifica le otto direzioni adiacenti (sopra, sotto, sinistra, destra e diagonali) aggiungo anche il nodo stesso
         int[][] directions = {
-            {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}
+            {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1},{0, 0}
         };
         float peso;
         for (int[] dir : directions) {
@@ -156,17 +156,18 @@ public class Griglia {
 	
 	// stampe
 	public void printGrafo() {
-		String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
-		for (int i = 0; i < dimensioni.getRighe(); i++) {
-			for (int j = 0; j < dimensioni.getColonne(); j++) {
-				if (G[i][j].isOstacolo())
-					grafo[i][j]="# | ";
-				else grafo[i][j]="  | ";		
-			}
-		}
-		
 		int agente=0;
 		for (Percorso p : percorsi) {
+			System.out.println("Agente " + agente);
+			String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
+			for (int i = 0; i < dimensioni.getRighe(); i++) {
+				for (int j = 0; j < dimensioni.getColonne(); j++) {
+					if (G[i][j].isOstacolo())
+						grafo[i][j]="# | ";
+					else grafo[i][j]="  | ";		
+				}
+			}
+			
 			for (int i = 0; i < p.getPercorso().size(); i++) {
 				int x=p.getPercorso().get(i).getVertice().getX();
 				int y=p.getPercorso().get(i).getVertice().getY();
@@ -174,11 +175,10 @@ public class Griglia {
 				
 				if(G[x][y].isOstacolo())
 					System.out.println("Passo attraverso ostacolo");
-				grafo[x][y]= String.format("%d | ",agente);
+				grafo[x][y]= String.format("%d | ",t);
 				
 			}
-			agente++;
-		}
+		
 		
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
@@ -186,7 +186,8 @@ public class Griglia {
 			}
 			System.out.println();
 		}
-		
+		agente++;
+		}
 	}
 	
 	public void printMatriceW() {
@@ -270,29 +271,33 @@ public class Griglia {
     	
 		open.add(new Stato(init,0));
 		
+		/*
 		for (int t = 0; t <= max; t++) {
 			for (Vertice v : G.verticiG()) {
 				g.put(new Stato(v,t), Double.POSITIVE_INFINITY);
 				P.put(new Stato(v,t), null);
 			}
-		}
+		}*/
+		
 		// g è il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
 		g.put(new Stato(init,0), 0.0);
-		
 		f.put(new Stato(init,0), h(init,goal));
 		
 		while(!open.isEmpty()) {
 			
 			Stato minStato=open.get(0);
 		
-			double min= g.get(minStato)+ h(minStato.getVertice(),goal);
+			double min= Double.POSITIVE_INFINITY;
 			
 			// riga 13
 			for (Stato stato : open) {
-				if(g.get(stato) + h(stato.getVertice(),goal)<min) {
-					min=g.get(stato) + h(stato.getVertice(),goal);
-					minStato=stato;
-				}
+				Double gValue = g.get(stato);
+			    double currentCost = (gValue != null) ? gValue : Double.POSITIVE_INFINITY;
+
+			    if (currentCost + h(stato.getVertice(), goal) < min) {
+			        min = currentCost + h(stato.getVertice(), goal);
+			        minStato = stato;
+			    }
 			}
 			
 			open.remove(minStato);
@@ -317,18 +322,23 @@ public class Griglia {
 							}
 							
 							// collisione con un agente preesistente fermo nella sua cella finale
-							if(a.getPercorso().get(a.getPercorso().size()-1).getVertice().equals(n))
+							if(a.getPercorso().get(a.getPercorso().size()-1).getVertice().equals(n) && t>=a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale())
 								traversable=false;
 						}
 						
 						// parte 4
 						if (traversable) {
-							if(g.get(minStato) + v.getListaAdiacenza().get(n) < g.get(new Stato(n,t+1))){
-								P.replace(new Stato(n,t+1), minStato);
-								g.replace(new Stato(n,t+1), g.get(minStato) + v.getListaAdiacenza().get(n));
-								
-								f.replace(new Stato(n,t+1), g.get(new Stato(n,t+1)) + h (n,goal));
-							}
+						    Double minStatoGValue = g.get(minStato);
+						    double currentCost = (minStatoGValue != null) ? minStatoGValue : Double.POSITIVE_INFINITY;
+
+						    Double nT1GValue = g.get(new Stato(n, t + 1));
+						    double newCost = (nT1GValue != null) ? nT1GValue : Double.POSITIVE_INFINITY;
+
+						    if (currentCost + v.getListaAdiacenza().get(n) < newCost) {
+						        P.put(new Stato(n, t + 1), minStato);
+						        g.put(new Stato(n, t + 1), currentCost + v.getListaAdiacenza().get(n));
+						        f.put(new Stato(n, t + 1), g.get(new Stato(n, t + 1)) + h(n, goal));
+						    }
 						}
 						if (!open.contains(new Stato(n,t+1))) {
 							open.add(new Stato(n,t+1));

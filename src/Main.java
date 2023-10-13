@@ -7,7 +7,7 @@ public class Main {
 		Griglia griglia= new Griglia(dimensioni, (float) 0.5, (float) 0.2);
 		
 		
-		griglia.generatoreIstanze(5);
+		griglia.generatoreIstanze(3);
 		griglia.printGrafo();
 		
 		
