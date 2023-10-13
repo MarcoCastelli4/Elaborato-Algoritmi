@@ -18,6 +18,8 @@ public class Griglia {
 	private int numero_ostacoli_MAX;
 	private int numero_ostacoli;
 	
+	private List<Vertice> listaVerticiValidi=new ArrayList<Vertice>();
+	
 	// Liste di stati
 	private List<Stato> open;
 	private List<Stato> closed;
@@ -32,6 +34,7 @@ public class Griglia {
 	// Percorsi degli n agenti
 	List<Percorso> percorsi =new ArrayList<Percorso>();
 	
+	
 	public Griglia(Dimensioni dimensioni, float percentuale_celle_attraversabili, float fattore_agglomerazione_ostacoli) {
 		if(percentuale_celle_attraversabili<0.0 || percentuale_celle_attraversabili>1.0 || fattore_agglomerazione_ostacoli<0.0 || fattore_agglomerazione_ostacoli>1.0)
 			throw new IllegalArgumentException();
@@ -40,6 +43,14 @@ public class Griglia {
 			this.numero_ostacoli_MAX=(int) (dimensioni.getRighe()*dimensioni.getColonne()*(1.0-percentuale_celle_attraversabili));
 			this.numero_ostacoli=0;
 			G=generatoreGriglia(dimensioni,percentuale_celle_attraversabili,fattore_agglomerazione_ostacoli);
+			
+			for (int i = 0; i < dimensioni.getRighe(); i++) {
+				for (int j = 0; j < dimensioni.getColonne(); j++) {
+					if(!G[i][j].isOstacolo())
+						listaVerticiValidi.add(G[i][j]);
+				}
+			}
+			
 		}
 	}
 
@@ -141,7 +152,7 @@ public class Griglia {
 		inizializza_matrice_W();
 		return G;	
 	}
-
+	
 	// aggiorno i pesi della matrice
 	private void inizializza_matrice_W() {
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
@@ -159,6 +170,9 @@ public class Griglia {
 		int agente=0;
 		for (Percorso p : percorsi) {
 			System.out.println("Agente " + agente);
+			System.out.println("Init si trova: x: "+p.getInit().getX()+ "y: "+p.getInit().getY());
+        	System.out.println("Il goal si trova: x: "+p.getGoal().getX()+ "y: "+p.getGoal().getY());
+        	
 			String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
 			for (int i = 0; i < dimensioni.getRighe(); i++) {
 				for (int j = 0; j < dimensioni.getColonne(); j++) {
@@ -351,17 +365,39 @@ public class Griglia {
 		return null;
 	}
     
-   private int[] generaPunto() {
-	   // Create an instance of the Random class
-       int riga,colonna;
+   private Vertice[] generaInitGoal(List <Percorso> percorsi) {
+	   
+	   // indici init
+       int i;
+       //indici goal
+       int g;
        do {
-    	   Random random = new Random();
-    	   riga = random.nextInt(dimensioni.getRighe());
-    	   colonna = random.nextInt(dimensioni.getColonne());
-       }while((G[riga][colonna].isOstacolo()));
        
-       int[] r= {riga,colonna};
-       return r;
+    	   // INIT - controllo che non sia un ostacolo
+    	   Random random = new Random();
+    	   i = random.nextInt(listaVerticiValidi.size()-1);
+    	  
+       // GOAL - controllo che non sia un ostacolo
+       
+       boolean valido;
+       do {
+    	   valido=true;
+    	   g = random.nextInt(listaVerticiValidi.size()-1);
+    	   
+    	// se genero un goal che è all'interno delle celle visitate da un altro percorso, non è valido
+    	   for (Percorso percorso : percorsi) {
+				for (Vertice vertice : percorso.getAllVertici()) {
+			        if (vertice.equals(listaVerticiValidi.get(g))) 
+			        	valido=false;
+			    }
+    	   }
+       }while(!valido);
+       }while(listaVerticiValidi.get(i).equals(listaVerticiValidi.get(g)));
+       
+       Vertice[] result = new Vertice[2];
+       result[0] = listaVerticiValidi.get(i);
+       result[1] = listaVerticiValidi.get(g);
+       return result;
    }
    
    public List<Percorso> generatoreIstanze(int numero_agenti){
@@ -373,29 +409,19 @@ public class Griglia {
     	while(i<numero_agenti) {
     		Vertice init,goal;
     		
-    		do {
-    		int[] tmp=generaPunto();
-    		
-    		init= G[tmp[0]][tmp[1]];    		
-    		int[] tmp2=generaPunto();
-    		goal=G[tmp2[0]][tmp2[1]];
-    		}while(init.equals(goal));
-    		
-    		
-    		
+    		Vertice[] res=generaInitGoal(percorsi);
+    		init=res[0];
+    		goal=res[1];
     		
     		Percorso t;
     		if(i==0) 
-    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max));
+    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal);
     		else {
     			
-        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max));
+        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal);
     		}
     		
     		if(t.getPercorso()!=null) {
-    			System.out.println("Init si trova: x: "+init.getX()+ "y: "+init.getY());
-            	System.out.println("Il goal si trova: x: "+goal.getX()+ "y: "+goal.getY());
-            	
     			percorsi.add(t);
     			istanti_max= percorsi.get(i).getPercorso().size()-1;
     			i++;
