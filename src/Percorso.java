@@ -9,11 +9,14 @@ public class Percorso {
 
 	private Vertice init;
 	private Vertice goal;
+	private float peso;
 	
-	public Percorso(List<Stato> percorso, Vertice init,Vertice goal) {
+
+	public Percorso(List<Stato> percorso, Vertice init,Vertice goal, float peso) {
 		setPercorso(percorso);
 		setInit(init);
 		setGoal(goal);
+		setPeso(peso);
 	}
 	
 	public List<Stato> getPercorso() {
@@ -46,6 +49,12 @@ public class Percorso {
 		this.goal = goal;
 	}
 
+	public float getPeso(){
+		return peso;
+	}
+	public void setPeso(float peso) {
+		this.peso = peso;
+	}
 	
 	
 }

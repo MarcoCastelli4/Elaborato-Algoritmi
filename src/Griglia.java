@@ -64,7 +64,7 @@ public class Griglia {
 		}
 	}
 	
-	// Verifica se una cella è valida (all'interno dei limiti della griglia)
+	// Verifica se una cella ï¿½ valida (all'interno dei limiti della griglia)
     private boolean isValidCell(int row, int col) {
         return row >= 0 && row < dimensioni.getRighe() && col >= 0 && col < dimensioni.getColonne();
     }
@@ -74,7 +74,7 @@ public class Griglia {
     	Random random = new Random();
         int clusterSize = (int) (Math.ceil(0.02*dimensioni.getRighe()*dimensioni.getColonne()) + random.nextInt((int) Math.ceil(0.04*dimensioni.getRighe()*dimensioni.getColonne()))); // Dimensione del cluster casuale (da 2 a 5)
 
-        // la dimesnione del cluster non può sforarare il numero di celle attraversabili
+        // la dimesnione del cluster non puï¿½ sforarare il numero di celle attraversabili
         if (clusterSize+numero_ostacoli>numero_ostacoli_MAX)
         	clusterSize=numero_ostacoli_MAX-numero_ostacoli;
          
@@ -85,7 +85,7 @@ public class Griglia {
             int newRow = row + yOffset;
             int newCol = col + xOffset;
 
-            // Verifica se la nuova cella è valida e vuota
+            // Verifica se la nuova cella ï¿½ valida e vuota
             if (isValidCell(newRow, newCol) && G[newRow][newCol].isOstacolo()==false) {
                 G[newRow][newCol].setOstacolo(true);
                 numero_ostacoli+=1;
@@ -103,9 +103,9 @@ public class Griglia {
             int newRow = row + dir[0];
             int newCol = col + dir[1];
 
-            // Verifica se la nuova posizione è all'interno dei limiti della griglia
+            // Verifica se la nuova posizione ï¿½ all'interno dei limiti della griglia
             if (newRow >= 0 && newRow < dimensioni.getRighe() && newCol >= 0 && newCol < dimensioni.getColonne()) {
-                // Verifica se NON c'è un ostacolo nella cella adiacente
+                // Verifica se NON c'ï¿½ un ostacolo nella cella adiacente
                 if (!G[newRow][newCol].isOstacolo()) {
                 	if((dir[0] == -1 || dir[0] == 1) && (dir[1] == -1 || dir[1] == 1))
                 		peso=(float) Math.sqrt(2);
@@ -132,7 +132,7 @@ public class Griglia {
                 // Genera un valore casuale tra 0 e 1
                 double randomValue = random.nextDouble();
 
-                // Verifica se la cella deve contenere un ostacolo in base alla densità specificata
+                // Verifica se la cella deve contenere un ostacolo in base alla densitï¿½ specificata
                 boolean hasObstacle = randomValue <= percentuale_ostacoli;
                 
                 if (hasObstacle && numero_ostacoli<numero_ostacoli_MAX) {
@@ -169,10 +169,15 @@ public class Griglia {
 	public void printGrafo() {
 		int agente=0;
 		for (Percorso p : percorsi) {
+			float peso=0;
 			System.out.println("Agente " + agente);
 			System.out.println("Init si trova: x: "+p.getInit().getX()+ "y: "+p.getInit().getY());
         	System.out.println("Il goal si trova: x: "+p.getGoal().getX()+ "y: "+p.getGoal().getY());
-        	
+        	for (int i=0; i< p.getPercorso().size()-1; i++) {
+				peso+=p.getPercorso().get(i).getVertice().getListaAdiacenza().get(p.getPercorso().get(i+1).getVertice());
+			}
+			p.setPeso(peso);
+			System.out.println("peso percorso: "+ p.getPeso());
 			String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
 			for (int i = 0; i < dimensioni.getRighe(); i++) {
 				for (int j = 0; j < dimensioni.getColonne(); j++) {
@@ -245,9 +250,9 @@ public class Griglia {
     	// controllo che ultimo elemento di array sia il goal
     	if(closed.get(closed.size()-1).equals(new Stato(goal, t))) {
     		
-    		// mettiamo il goal che è all'ultima posizione
+    		// mettiamo il goal che ï¿½ all'ultima posizione
     		res.add(closed.get(closed.size()-1));
-    		// mettiamo il padre di goal che è all'ultima posizione
+    		// mettiamo il padre di goal che ï¿½ all'ultima posizione
     		res.add(P.get(closed.get(closed.size()-1)));
     	}
     	// ripeto fino a che non sono in init con t=0
@@ -293,7 +298,7 @@ public class Griglia {
 			}
 		}*/
 		
-		// g è il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
+		// g ï¿½ il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
 		g.put(new Stato(init,0), 0.0);
 		f.put(new Stato(init,0), h(init,goal));
 		
@@ -384,7 +389,7 @@ public class Griglia {
     	   valido=true;
     	   g = random.nextInt(listaVerticiValidi.size()-1);
     	   
-    	// se genero un goal che è all'interno delle celle visitate da un altro percorso, non è valido
+    	// se genero un goal che ï¿½ all'interno delle celle visitate da un altro percorso, non ï¿½ valido
     	   for (Percorso percorso : percorsi) {
 				for (Vertice vertice : percorso.getAllVertici()) {
 			        if (vertice.equals(listaVerticiValidi.get(g))) 
@@ -415,10 +420,10 @@ public class Griglia {
     		
     		Percorso t;
     		if(i==0) 
-    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal);
+    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal,0);
     		else {
     			
-        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal);
+        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal,0);
     		}
     		
     		if(t.getPercorso()!=null) {
