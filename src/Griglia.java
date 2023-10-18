@@ -255,11 +255,16 @@ public class Griglia {
     		// mettiamo il padre di goal che � all'ultima posizione
     		res.add(P.get(closed.get(closed.size()-1)));
     	}
+
+		if(res.contains(null)){
+			System.err.println("ERRORE: il goal è isolato. Riprova!");
+		}else{
     	// ripeto fino a che non sono in init con t=0
     	while(!res.get(res.size()-1).equals(new Stato(init, 0))) {
     		//aggiungo il padre dell'ultimo elemento di res
     		res.add(P.get(res.get(res.size()-1)));
     	}
+	}
     	Collections.reverse(res);
     	
     	return res;
@@ -283,7 +288,7 @@ public class Griglia {
 		// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
     	for (Percorso a : agenti) {
 			if(a.getPercorso().contains(new Stato(init,0))) {
-					System.err.println("Posizione iniziale agenti uguale a init");
+					System.err.println("ERRORE: Posizione iniziale agente uguale a init. Riprova!");
 					return null;
 			}
     	}
@@ -366,7 +371,6 @@ public class Griglia {
 				}
 			}
 		}
-		
 		return null;
 	}
     
@@ -412,7 +416,7 @@ public class Griglia {
     	int i=0;
 
     	while(i<numero_agenti) {
-    		Vertice init,goal;
+			Vertice init,goal;
     		
     		Vertice[] res=generaInitGoal(percorsi);
     		init=res[0];
@@ -422,19 +426,55 @@ public class Griglia {
     		if(i==0) 
     			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal,0);
     		else {
-    			
-        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal,0);
-    		}
+    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal,0);
+			}
     		
-    		if(t.getPercorso()!=null) {
+    		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
     			percorsi.add(t);
     			istanti_max= percorsi.get(i).getPercorso().size()-1;
     			i++;
     		}
-    			
-    	}
-    	
+    	}	
     	return percorsi;
     }
-	 
+	 /*int max=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
+    	int istanti_max = 0;
+    	int i=0;
+		int j=0;
+
+    	while(i<numero_agenti) {
+    		if(j>=10){
+				System.err.println("numero massimo DI ITERAZIONE RAGGIUNTE");
+				break;
+			} else{
+			Vertice init,goal;
+    		
+    		Vertice[] res=generaInitGoal(percorsi);
+    		init=res[0];
+    		goal=res[1];
+    		
+    		Percorso t=null;
+    		if(i==0 && j<10) {
+    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal,0);
+				if(t.getPercorso()==null){
+				j++;
+			}else{
+				j=0;
+			}
+		}
+				if(i!=0 && j<10){
+        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal,0);
+				if(t.getPercorso()==null || t ==null){
+				j++;
+			} else {
+				j=0;
+			}
+		}
+    		
+    		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
+    			percorsi.add(t);
+    			istanti_max= percorsi.get(i).getPercorso().size()-1;
+    			i++;
+    		}
+    		}	 */
 }
