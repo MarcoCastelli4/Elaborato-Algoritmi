@@ -169,14 +169,9 @@ public class Griglia {
 	public void printGrafo() {
 		int agente=0;
 		for (Percorso p : percorsi) {
-			float peso=0;
 			System.out.println("Agente " + agente);
 			System.out.println("Init si trova: x: "+p.getInit().getX()+ "y: "+p.getInit().getY());
         	System.out.println("Il goal si trova: x: "+p.getGoal().getX()+ "y: "+p.getGoal().getY());
-        	for (int i=0; i< p.getPercorso().size()-1; i++) {
-				peso+=p.getPercorso().get(i).getVertice().getListaAdiacenza().get(p.getPercorso().get(i+1).getVertice());
-			}
-			p.setPeso(peso);
 			System.out.println("peso percorso: "+ p.getPeso());
 			String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
 			for (int i = 0; i < dimensioni.getRighe(); i++) {
@@ -284,7 +279,10 @@ public class Griglia {
     	// Stato, Stato padre
     	P= new HashMap<>();
     	
-    	   	
+    	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1){
+			System.err.println("Init o goal isolato");
+			return null;
+		}
 		// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
     	for (Percorso a : agenti) {
 			if(a.getPercorso().contains(new Stato(init,0))) {
@@ -295,7 +293,7 @@ public class Griglia {
     	
 		open.add(new Stato(init,0));
 		
-		/*
+		/* rimosso per complessità computazionale
 		for (int t = 0; t <= max; t++) {
 			for (Vertice v : G.verticiG()) {
 				g.put(new Stato(v,t), Double.POSITIVE_INFINITY);
@@ -345,7 +343,7 @@ public class Griglia {
 								traversable=false;
 							}
 							
-							// collisione con un agente preesistente fermo nella sua cella finale
+							// collisione con un agente preesistente fermo nella sua cella finale (il nodo percorso non deve passare nel goal di un altro percorso in un istante temporale succesivo a quello del goal)
 							if(a.getPercorso().get(a.getPercorso().size()-1).getVertice().equals(n) && t>=a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale())
 								traversable=false;
 						}
@@ -371,10 +369,11 @@ public class Griglia {
 				}
 			}
 		}
+		System.err.println("ERRORE: impossibile generare il percorso ");
 		return null;
 	}
     
-   private Vertice[] generaInitGoal(List <Percorso> percorsi) {
+   public Vertice[] generaInitGoal(List <Percorso> percorsi) {
 	   
 	   // indici init
        int i;
@@ -384,14 +383,14 @@ public class Griglia {
        
     	   // INIT - controllo che non sia un ostacolo
     	   Random random = new Random();
-    	   i = random.nextInt(listaVerticiValidi.size()-1);
+    	   i = random.nextInt(listaVerticiValidi.size());
     	  
        // GOAL - controllo che non sia un ostacolo
        
        boolean valido;
        do {
     	   valido=true;
-    	   g = random.nextInt(listaVerticiValidi.size()-1);
+    	   g = random.nextInt(listaVerticiValidi.size());
     	   
     	// se genero un goal che � all'interno delle celle visitate da un altro percorso, non � valido
     	   for (Percorso percorso : percorsi) {
@@ -410,41 +409,14 @@ public class Griglia {
    }
    
    public List<Percorso> generatoreIstanze(int numero_agenti){
-    	
     	int max=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
-    	int istanti_max = 0;
-    	int i=0;
-
-    	while(i<numero_agenti) {
-			Vertice init,goal;
-    		
-    		Vertice[] res=generaInitGoal(percorsi);
-    		init=res[0];
-    		goal=res[1];
-    		
-    		Percorso t;
-    		if(i==0) 
-    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal,0);
-    		else {
-    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal,0);
-			}
-    		
-    		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
-    			percorsi.add(t);
-    			istanti_max= percorsi.get(i).getPercorso().size()-1;
-    			i++;
-    		}
-    	}	
-    	return percorsi;
-    }
-	 /*int max=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
     	int istanti_max = 0;
     	int i=0;
 		int j=0;
 
     	while(i<numero_agenti) {
     		if(j>=10){
-				System.err.println("numero massimo DI ITERAZIONE RAGGIUNTE");
+				System.err.println("Non è possibile generare "+ numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
 				break;
 			} else{
 			Vertice init,goal;
@@ -455,15 +427,15 @@ public class Griglia {
     		
     		Percorso t=null;
     		if(i==0 && j<10) {
-    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal,0);
+    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal);
 				if(t.getPercorso()==null){
-				j++;
-			}else{
-				j=0;
-			}
+					j++;
+				} else {
+					j=0;
+				}
 		}
 				if(i!=0 && j<10){
-        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal,0);
+        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal);
 				if(t.getPercorso()==null || t ==null){
 				j++;
 			} else {
@@ -472,9 +444,20 @@ public class Griglia {
 		}
     		
     		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
-    			percorsi.add(t);
+    			System.out.println("Trovato il percorso dell'agente "+i);
+				percorsi.add(t);
     			istanti_max= percorsi.get(i).getPercorso().size()-1;
     			i++;
     		}
-    		}	 */
+    		
+    	
+    }
+	
+		}
+		return percorsi;
 }
+public List<Percorso> getPercorsi(){
+	return percorsi;
+}
+}
+

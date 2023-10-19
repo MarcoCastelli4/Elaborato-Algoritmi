@@ -12,11 +12,15 @@ public class Percorso {
 	private float peso;
 	
 
-	public Percorso(List<Stato> percorso, Vertice init,Vertice goal, float peso) {
+	public Percorso(List<Stato> percorso, Vertice init,Vertice goal) {
 		setPercorso(percorso);
 		setInit(init);
 		setGoal(goal);
-		setPeso(peso);
+		if(percorso != null){
+			for (int i=0; i< percorso.size()-1; i++) {
+				this.peso+=percorso.get(i).getVertice().getListaAdiacenza().get(percorso.get(i+1).getVertice());
+			}
+		}
 	}
 	
 	public List<Stato> getPercorso() {
