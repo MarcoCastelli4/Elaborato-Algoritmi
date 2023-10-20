@@ -252,7 +252,7 @@ public class Griglia {
     	}
 
 		if(res.contains(null)){
-			System.err.println("ERRORE: il goal Ã¨ isolato. Riprova!");
+			System.err.println("ERRORE: il goal è isolato. Riprova!");
 		}else{
     	// ripeto fino a che non sono in init con t=0
     	while(!res.get(res.size()-1).equals(new Stato(init, 0))) {

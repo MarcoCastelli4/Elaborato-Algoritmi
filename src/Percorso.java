@@ -16,10 +16,12 @@ public class Percorso {
 		setPercorso(percorso);
 		setInit(init);
 		setGoal(goal);
-		if(percorso != null){
+		if(percorso!=null) {
+		if(!percorso.contains(null)){
 			for (int i=0; i< percorso.size()-1; i++) {
 				this.peso+=percorso.get(i).getVertice().getListaAdiacenza().get(percorso.get(i+1).getVertice());
 			}
+		}
 		}
 	}
 	
