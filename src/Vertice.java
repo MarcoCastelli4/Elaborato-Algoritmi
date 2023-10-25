@@ -2,11 +2,13 @@ import java.lang.Math;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Vertice {
+public class Vertice implements Comparable<Vertice>{
 
 	private boolean ostacolo;
 	private int x;
 	private int y;
+	private float peso;
+	private Vertice padre;
 	
 	// lista di adiacenza di ogni vertice
 	private Map<Vertice,Float> lista_adiacenza = new HashMap<>();
@@ -15,9 +17,19 @@ public class Vertice {
 			this.setX(x);
 			this.setY(y);
 			this.ostacolo=false;
+			setPeso(Float.POSITIVE_INFINITY);
+			setPadre(null);
 	
 	}
 	
+	public Vertice(Vertice v) {
+		setOstacolo(ostacolo);
+		setPadre(v);
+		setPeso(peso);
+		setX(x);
+		setY(y);
+
+}
 	public boolean isOstacolo() {
 		return ostacolo;
 	}
@@ -72,9 +84,31 @@ public class Vertice {
         return getX()*getY()*intValue;
     }
 
-	
-	
-	
-	
+	public Vertice getPadre() {
+		return padre;
+	}
+
+	public void setPadre(Vertice padre) {
+		this.padre = padre;
+	}
+
+	public float getPeso() {
+		return peso;
+	}
+
+	public void setPeso(float peso) {
+		this.peso = peso;
+	}
+
+	@Override
+	public int compareTo(Vertice o) {
+		float d= getPeso()-o.getPeso();
+		
+		if(d<0)
+			return 1;
+		if (d>0)
+			return -1;
+		return 0;
+	}	
 	
 }
