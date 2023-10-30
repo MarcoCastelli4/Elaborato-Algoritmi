@@ -1,5 +1,6 @@
 import java.lang.Math;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 public class Vertice implements Comparable<Vertice>{
@@ -17,17 +18,21 @@ public class Vertice implements Comparable<Vertice>{
 			this.setX(x);
 			this.setY(y);
 			this.ostacolo=false;
+			// per dijkstra
 			setPeso(Float.POSITIVE_INFINITY);
 			setPadre(null);
 	
 	}
 	
 	public Vertice(Vertice v) {
-		setOstacolo(ostacolo);
-		setPadre(v);
-		setPeso(peso);
-		setX(x);
-		setY(y);
+		setOstacolo(v.isOstacolo());
+		setPadre(v.getPadre());
+		setPeso(v.getPeso());
+		setX(v.getX());
+		setY(v.getY());
+		
+		// copio la lista di adiacenza
+		setListaAdiacenza(v.getListaAdiacenza());
 
 }
 	public boolean isOstacolo() {
@@ -56,6 +61,9 @@ public class Vertice implements Comparable<Vertice>{
 		return lista_adiacenza;
 	}
 	
+	public void setListaAdiacenza(Map<Vertice,Float> lista){
+		this.lista_adiacenza.putAll(lista);
+	}
 	
 	public void addVerticeAdiacente(Vertice vertice,float peso) {
 		this.lista_adiacenza.put(vertice,peso);
@@ -105,9 +113,9 @@ public class Vertice implements Comparable<Vertice>{
 		float d= getPeso()-o.getPeso();
 		
 		if(d<0)
-			return 1;
-		if (d>0)
 			return -1;
+		if (d>0)
+			return 1;
 		return 0;
 	}	
 	
