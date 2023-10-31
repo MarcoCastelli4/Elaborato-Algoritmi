@@ -372,12 +372,12 @@ public void Dijkstra(Griglia G, Vertice goal) {
 	
 	
 	List<Vertice> S=new ArrayList<>();
-	
 	Queue<Vertice> Q=new PriorityQueue<>();
 	
+	// setto vertice di partenza
 	this.G[goal.getX()][goal.getY()].setPeso(0);
 	
-	// aggiugo tutti gli elementi
+	// aggiugo tutti gli elementi della griglia
 	for (int i = 0; i < dimensioni.getRighe(); i++) {
 		for (int j = 0; j < dimensioni.getColonne(); j++) {
 			if(!this.G[i][j].isOstacolo()) {
@@ -401,7 +401,7 @@ public void Dijkstra(Griglia G, Vertice goal) {
 				Q.remove(v);
 				v.setPeso(u.getPeso()+ u.getListaAdiacenza().get(v));
 				v.setPadre(u);
-				// vedere se servono queste due istruzioni
+				// aggiorno la struttura G per essere reperibile 
 				this.G[v.getX()][v.getY()].setPeso(u.getPeso()+ u.getListaAdiacenza().get(v));
 				this.G[v.getX()][v.getY()].setPadre(u);
 				// aggiorno con il nuovo elemento
@@ -436,7 +436,7 @@ private boolean isConflitto(Percorso p, List<Percorso> agenti) {
 	return false;
 }
     
-// TODO versione di reach goal alternativa
+// versione di reach goal alternativa
 public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
     	
     	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1){
@@ -457,7 +457,7 @@ public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertic
   
     	List<Vertice> percorso=new ArrayList<>();
     	
-    	// ricostruisco il percorso a partire da init
+    	// ricostruisco il percorso a partire da init, ho aggiornato i pesi e i padri chiamando djikstra nel main
     	percorso.add(this.G[init.getX()][init.getY()]);	
     	// continuo ad inserire finchè diverso da init
     	while(!percorso.get(percorso.size()-1).equals(goal) && t<max) {
@@ -467,7 +467,7 @@ public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertic
     	}
     	
     	
-    	// inserisco in P
+    	// inserisco in un array di stati
     	List <Stato> res= new ArrayList<>();
     	for (int i = 0; i < percorso.size(); i++) {
 			//P.put(new Stato(percorso.get(i+1),i+1), new Stato(percorso.get(i),i));
