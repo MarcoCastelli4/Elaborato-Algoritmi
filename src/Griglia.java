@@ -252,7 +252,7 @@ public class Griglia {
     	}
 
 		if(res.contains(null)){
-			System.err.println("ERRORE: il goal è isolato. Riprova!");
+			System.err.println("ERRORE: il goal ï¿½ isolato. Riprova!");
 		}else{
     	// ripeto fino a che non sono in init con t=0
     	while(!res.get(res.size()-1).equals(new Stato(init, 0))) {
@@ -416,30 +416,30 @@ private boolean isConflitto(Percorso p, List<Percorso> agenti) {
 
 	for (int i = 0; i < p.getPercorso().size()-1; i++) {
 		for (Percorso a:agenti) {
-			for (int j = 0; j < a.getPercorso().size()-1; j++) {
-				// stato già presente in un percorso, potrebbe essere anche l'init
-				if(p.getPercorso().get(i).equals(a.getPercorso().get(j)))
+			if(i < a.getPercorso().size()-1){
+				// stato giï¿½ presente in un percorso, potrebbe essere anche l'init
+				if(p.getPercorso().get(i).equals(a.getPercorso().get(i)))
 					return true;
 				//scambio di posizione SCONTRO
-				if(p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(j).getVertice())
-						&& p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(j+1).getVertice()))
+				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(i).getVertice()))
+						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+1).getVertice())))
 					return true;
 				
-			}
 			// controllo di non passare in uno stato finale di un agente in un istante successivo
-			if (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice()) &&
-					p.getPercorso().get(i).getIstante_temporale()>= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale())
+			if ((p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice())) &&
+					(p.getPercorso().get(i).getIstante_temporale()>= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
 				return true;
 			
 		}
 	}
+}
 	return false;
 }
     
 // versione di reach goal alternativa
 public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
     	
-		// dato che abbiamo espanso il percorso null si verifica che non ha padre allora è isolato goal separati
+		// dato che abbiamo espanso il percorso null si verifica che non ha padre allora ï¿½ isolato goal separati
     	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1 || init.getPadre()==null){
 			System.err.println("Init o goal isolato");
 			return null;
@@ -460,7 +460,7 @@ public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertic
     	
     	// ricostruisco il percorso a partire da init, ho aggiornato i pesi e i padri chiamando djikstra nel main
     	percorso.add(this.G[init.getX()][init.getY()]);	
-    	// continuo ad inserire finchè diverso da init
+    	// continuo ad inserire finchï¿½ diverso da init
     	while(!percorso.get(percorso.size()-1).equals(goal) && t<max) {
     		// aggiungo padre dell'ultimo elemento
     		percorso.add(percorso.get(percorso.size()-1).getPadre());
