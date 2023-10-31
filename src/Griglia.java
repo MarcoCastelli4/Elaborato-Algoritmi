@@ -466,12 +466,12 @@ public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertic
     		percorso.add(percorso.get(percorso.size()-1).getPadre());
     		t++;
     	}
+    	if (t>=max) return null;
     	
     	
     	// inserisco in un array di stati
     	List <Stato> res= new ArrayList<>();
     	for (int i = 0; i < percorso.size(); i++) {
-			//P.put(new Stato(percorso.get(i+1),i+1), new Stato(percorso.get(i),i));
 			res.add(new Stato(percorso.get(i),i));
 		}
     	
