@@ -19,6 +19,7 @@ public class Main {
 		// eseguo il djkstra per il goal
 		griglia.Dijkstra(griglia,v[1]);
 		
+		
 		Percorso alt=new Percorso(griglia.ReachGoalAlternativo(griglia, agenti,v[0], v[1], 10),v[0],v[1]);
 		
 		Percorso pri=new Percorso(griglia.ReachGoal(griglia, agenti,v[0], v[1], 10),v[0],v[1]);

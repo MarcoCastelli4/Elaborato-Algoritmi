@@ -402,8 +402,8 @@ public void Dijkstra(Griglia G, Vertice goal) {
 				v.setPeso(u.getPeso()+ u.getListaAdiacenza().get(v));
 				v.setPadre(u);
 				// aggiorno la struttura G per essere reperibile 
-				this.G[v.getX()][v.getY()].setPeso(u.getPeso()+ u.getListaAdiacenza().get(v));
-				this.G[v.getX()][v.getY()].setPadre(u);
+				this.G[v.getX()][v.getY()].setPeso(v.getPeso());
+				this.G[v.getX()][v.getY()].setPadre(v.getPadre());
 				// aggiorno con il nuovo elemento
 				Q.add(v);
 			}
@@ -439,7 +439,8 @@ private boolean isConflitto(Percorso p, List<Percorso> agenti) {
 // versione di reach goal alternativa
 public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
     	
-    	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1){
+		// dato che abbiamo espanso il percorso null si verifica che non ha padre allora è isolato goal separati
+    	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1 || init.getPadre()==null){
 			System.err.println("Init o goal isolato");
 			return null;
 		}
