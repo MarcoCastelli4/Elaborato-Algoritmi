@@ -365,9 +365,134 @@ public class Griglia {
 		return null;
 	}
     
-    
+    public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
+    	
+    	// Liste di stati
+    	open = new ArrayList<>();
+    	closed=new ArrayList<>();
+    			
+    	// Strutture dati
+    	g= new HashMap<>();
+    	f= new HashMap<>();
+    			
+    	// Stato, Stato padre
+    	P= new HashMap<>();
+    	
+    	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1){
+			System.err.println("Init o goal isolato");
+			return null;
+		}
+		// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
+    	for (Percorso a : agenti) {
+			if(a.getPercorso().contains(new Stato(init,0))) {
+					System.err.println("ERRORE: Posizione iniziale agente uguale a init. Riprova!");
+					return null;
+			}
+    	}
+    	
+		open.add(new Stato(init,0));
+		
+		// g ï¿½ il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
+		g.put(new Stato(init,0), 0.0);
+		f.put(new Stato(init,0), h(init,goal));
+		
+		while(!open.isEmpty()) {
+			
+			Stato minStato=open.get(0);
+		
+			double min= Double.POSITIVE_INFINITY;
+			
+			// riga 13
+			for (Stato stato : open) {
+				Double gValue = g.get(stato);
+			    double currentCost = (gValue != null) ? gValue : Double.POSITIVE_INFINITY;
+
+			    if (currentCost + h(stato.getVertice(), goal) < min) {
+			        min = currentCost + h(stato.getVertice(), goal);
+			        minStato = stato;
+			    }
+			}
+			
+			open.remove(minStato);
+			closed.add(minStato);
+			
+			if (minStato.getVertice().equals(goal)) {
+				return ReconstructPath(init,goal,P,minStato.getIstante_temporale());
+			}
+			
+			int t=minStato.getIstante_temporale();
+			Vertice v=minStato.getVertice();
+			
+			// ALTERNATIVA -------------------------------------
+			
+			// creo percorso rilassato da v a goal sfruttando djikstra
+			List<Stato> p=new ArrayList<>();
+			Vertice last=this.G[v.getX()][v.getY()];
+			p.add(new Stato(last,t));	
+	    	// continuo ad inserire finchè diverso da goal
+	    	while(!last.equals(goal)) {
+	    		// aggiungo padre dell'ultimo elemento
+	    		p.add(new Stato(last.getPadre(),p.get(p.size()-1).getIstante_temporale()+1));
+	    		last=last.getPadre();
+	    	}
+	    	Percorso pr=new Percorso(p, v, goal);
+	    	
+	    	if(this.isConflitto(pr, agenti)==false) {
+	    		List<Stato> res= ReconstructPath(init, v, P, t);	
+	    		// aggiungo gli elementi dopo v
+	    		for (int i = 1; i < pr.getPercorso().size(); i++) {
+					res.add(pr.getPercorso().get(i));
+				}
+	    		return res;
+	    	}
+			
+	    	
+	    	// --- FINE ALTERNATIVA ------------
+			// parte 3
+			
+			if (t<max) {
+				for (Vertice n : v.getListaAdiacenza().keySet()) {
+					if(!closed.contains(new Stato(n,t))) {
+						boolean traversable=true;
+						
+						for (Percorso a : agenti) {
+							if(a.getPercorso().contains(new Stato(n,t+1)) || 
+									(a.getPercorso().contains(new Stato(v,t+1)) && a.getPercorso().contains(new Stato(n,t)))) {
+								traversable=false;
+							}
+							
+							// collisione con un agente preesistente fermo nella sua cella finale (il nodo percorso non deve passare nel goal di un altro percorso in un istante temporale succesivo a quello del goal)
+							if(a.getPercorso().get(a.getPercorso().size()-1).getVertice().equals(n) && t>=a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale())
+								traversable=false;
+						}
+						
+						// parte 4
+						if (traversable) {
+						    Double minStatoGValue = g.get(minStato);
+						    double currentCost = (minStatoGValue != null) ? minStatoGValue : Double.POSITIVE_INFINITY;
+
+						    Double nT1GValue = g.get(new Stato(n, t + 1));
+						    double newCost = (nT1GValue != null) ? nT1GValue : Double.POSITIVE_INFINITY;
+
+						    if (currentCost + v.getListaAdiacenza().get(n) < newCost) {
+						        P.put(new Stato(n, t + 1), minStato);
+						        g.put(new Stato(n, t + 1), currentCost + v.getListaAdiacenza().get(n));
+						        f.put(new Stato(n, t + 1), g.get(new Stato(n, t + 1)) + h(n, goal));
+						    }
+						}
+						if (!open.contains(new Stato(n,t+1))) {
+							open.add(new Stato(n,t+1));
+						}
+					}
+				}
+			}
+		}
+		System.err.println("ERRORE: impossibile generare il percorso ");
+		return null;
+	}
 // CHECK algoritmo percorso rilassato (Djkstra)
-public void Dijkstra(Griglia G, Vertice goal) {
+    
+    public void Dijkstra(Griglia G, Vertice goal) {
 	// inizialize single source => implicita quando creo un vertice
 	
 	
@@ -412,8 +537,18 @@ public void Dijkstra(Griglia G, Vertice goal) {
 }
 
 // TODO algoritmo per il controllo dei conflitti cammini preesistenti, restituisce true se trova un conflitto
-private boolean isConflitto(Percorso p, List<Percorso> agenti) {
+    
+    private boolean isConflitto(Percorso p, List<Percorso> agenti) {
 
+    	
+    	for (Stato s : p.getPercorso()) {
+    		for (Percorso a:agenti) {
+    			for (int i = s.getIstante_temporale(); i < G.length; i++) {
+					
+				}
+    			
+    		}
+		}
 	for (int i = 0; i < p.getPercorso().size()-1; i++) {
 		for (Percorso a:agenti) {
 			if(i < a.getPercorso().size()-1){
@@ -436,8 +571,9 @@ private boolean isConflitto(Percorso p, List<Percorso> agenti) {
 	return false;
 }
     
-// versione di reach goal alternativa
-public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
+
+/*
+public List<Stato> ReachGoalAlternativoOld(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
     	
 		// dato che abbiamo espanso il percorso null si verifica che non ha padre allora ï¿½ isolato goal separati
     	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1 || init.getPadre()==null){
@@ -482,8 +618,10 @@ public List<Stato> ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertic
 		System.err.println("ERRORE: impossibile generare il percorso ");
 		return null;
 	}
+*/
 
-   public Vertice[] generaInitGoal(List <Percorso> percorsi) {
+
+    public Vertice[] generaInitGoal(List <Percorso> percorsi) {
 	   
 	   // indici init
        int i;
