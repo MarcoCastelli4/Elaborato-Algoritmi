@@ -204,6 +204,40 @@ public class Griglia {
 		}
 	}
 	
+	public void printPercorso(Percorso p) {
+			System.out.println("Init si trova: x: "+p.getInit().getX()+ "y: "+p.getInit().getY());
+        	System.out.println("Il goal si trova: x: "+p.getGoal().getX()+ "y: "+p.getGoal().getY());
+			System.out.println("peso percorso: "+ p.getPeso());
+			String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
+			for (int i = 0; i < dimensioni.getRighe(); i++) {
+				for (int j = 0; j < dimensioni.getColonne(); j++) {
+					if (G[i][j].isOstacolo())
+						grafo[i][j]="# | ";
+					else grafo[i][j]="  | ";		
+				}
+			}
+			
+			for (int i = 0; i < p.getPercorso().size(); i++) {
+				int x=p.getPercorso().get(i).getVertice().getX();
+				int y=p.getPercorso().get(i).getVertice().getY();
+				int t=p.getPercorso().get(i).getIstante_temporale();
+				
+				if(G[x][y].isOstacolo())
+					System.out.println("Passo attraverso ostacolo");
+				grafo[x][y]= String.format("%d | ",t);
+				
+			}
+		
+		
+		for (int i = 0; i < dimensioni.getRighe(); i++) {
+			for (int j = 0; j < dimensioni.getColonne(); j++) {
+				System.out.print(grafo[i][j]);
+			}
+			System.out.println();
+		}
+		
+	}
+	
 	public void printMatriceW() {
 		for (int i = 0; i < dimensioni.getRighe(); i++) {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
@@ -245,14 +279,15 @@ public class Griglia {
     	// controllo che ultimo elemento di array sia il goal
     	if(closed.get(closed.size()-1).equals(new Stato(goal, t))) {
     		
-    		// mettiamo il goal che ï¿½ all'ultima posizione
+    		// mettiamo il goal che è all'ultima posizione
     		res.add(closed.get(closed.size()-1));
-    		// mettiamo il padre di goal che ï¿½ all'ultima posizione
-    		res.add(P.get(closed.get(closed.size()-1)));
+    		// mettiamo il padre di goal che è all'ultima posizione,  solo se init e goal sono diversi
+    		if(!init.equals(goal))
+    			res.add(P.get(closed.get(closed.size()-1)));
     	}
 
 		if(res.contains(null)){
-			System.err.println("ERRORE: il goal ï¿½ isolato. Riprova!");
+			System.err.println("ERRORE: il goal è isolato. Riprova!");
 		}else{
     	// ripeto fino a che non sono in init con t=0
     	while(!res.get(res.size()-1).equals(new Stato(init, 0))) {
@@ -490,11 +525,10 @@ public class Griglia {
 		System.err.println("ERRORE: impossibile generare il percorso ");
 		return null;
 	}
-// CHECK algoritmo percorso rilassato (Djkstra)
+    // CHECK algoritmo percorso rilassato (Djkstra)
     
     public void Dijkstra(Griglia G, Vertice goal) {
 	// inizialize single source => implicita quando creo un vertice
-	
 	
 	List<Vertice> S=new ArrayList<>();
 	Queue<Vertice> Q=new PriorityQueue<>();
@@ -540,16 +574,9 @@ public class Griglia {
     
     private boolean isConflitto(Percorso p, List<Percorso> agenti) {
 
+    	int start=p.getPercorso().get(0).getIstante_temporale();
     	
-    	for (Stato s : p.getPercorso()) {
-    		for (Percorso a:agenti) {
-    			for (int i = s.getIstante_temporale(); i < G.length; i++) {
-					
-				}
-    			
-    		}
-		}
-	for (int i = 0; i < p.getPercorso().size()-1; i++) {
+	for (int i = start; i < p.getPercorso().size()-1; i++) {
 		for (Percorso a:agenti) {
 			if(i < a.getPercorso().size()-1){
 				// stato giï¿½ presente in un percorso, potrebbe essere anche l'init
