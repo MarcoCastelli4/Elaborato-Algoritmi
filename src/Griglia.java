@@ -34,6 +34,9 @@ public class Griglia {
 	// Percorsi degli n agenti
 	List<Percorso> percorsi =new ArrayList<Percorso>();
 	
+	// Percorsi creati da dijkstra
+	Map<Vertice, Percorso> allPath=new HashMap<Vertice, Percorso>();
+	
 	
 	public Griglia(Dimensioni dimensioni, float percentuale_celle_attraversabili, float fattore_agglomerazione_ostacoli) {
 		if(percentuale_celle_attraversabili<0.0 || percentuale_celle_attraversabili>1.0 || fattore_agglomerazione_ostacoli<0.0 || fattore_agglomerazione_ostacoli>1.0)
@@ -288,6 +291,7 @@ public class Griglia {
 
 		if(res.contains(null)){
 			System.err.println("ERRORE: il goal è isolato. Riprova!");
+			return null;
 		}else{
     	// ripeto fino a che non sono in init con t=0
     	while(!res.get(res.size()-1).equals(new Stato(init, 0))) {
@@ -460,26 +464,21 @@ public class Griglia {
 			
 			// ALTERNATIVA -------------------------------------
 			
-			// creo percorso rilassato da v a goal sfruttando djikstra
-			List<Stato> p=new ArrayList<>();
-			Vertice last=this.G[v.getX()][v.getY()];
-			p.add(new Stato(last,t));	
-	    	// continuo ad inserire finchè diverso da goal
-	    	while(!last.equals(goal)) {
-	    		// aggiungo padre dell'ultimo elemento
-	    		p.add(new Stato(last.getPadre(),p.get(p.size()-1).getIstante_temporale()+1));
-	    		last=last.getPadre();
-	    	}
-	    	Percorso pr=new Percorso(p, v, goal);
-	    	
-	    	if(this.isConflitto(pr, agenti)==false) {
-	    		List<Stato> res= ReconstructPath(init, v, P, t);	
-	    		// aggiungo gli elementi dopo v
-	    		for (int i = 1; i < pr.getPercorso().size(); i++) {
-					res.add(pr.getPercorso().get(i));
-				}
-	    		return res;
-	    	}
+			// ottengo percorso da v a goal sfruttando djikstra
+			if(allPath.containsKey(v)) {
+				Percorso p= allPath.get(v);
+				// aggiorno l'istante temporale del percorso
+				p=aggiornaIstantiTemporali(p,t);
+		    	if(this.isConflitto(p, agenti)==false) {
+		    		List<Stato> res= ReconstructPath(init, v, P, t);
+		    		//inserisco i vertici dopo v
+		    		for (int i = 1; i < p.getPercorso().size(); i++) {
+						res.add(p.getPercorso().get(i));
+					}
+		    		return res;
+		    	}
+			}
+			
 			
 	    	
 	    	// --- FINE ALTERNATIVA ------------
@@ -525,6 +524,11 @@ public class Griglia {
 		System.err.println("ERRORE: impossibile generare il percorso ");
 		return null;
 	}
+    
+    public Percorso aggiornaIstantiTemporali(Percorso p, int t) {
+    	p.getPercorso().forEach((u) -> u.setIstante_temporale(u.getIstante_temporale()+t));
+		return p;
+    }
     // CHECK algoritmo percorso rilassato (Djkstra)
     
     public void Dijkstra(Griglia G, Vertice goal) {
@@ -568,6 +572,45 @@ public class Griglia {
 			}
 		}	
 	}
+	
+	// creo la struttura con i percorsi da goal a tutti i vertici del grafo
+	
+	for (int i = 0; i < dimensioni.getRighe(); i++) {
+		 for (int j = 0; j < dimensioni.getColonne(); j++) {
+			 
+			 if(this.G[i][j].isOstacolo()==false) {
+			List<Stato> p=new ArrayList<>();
+			 // creo la lista di vertici
+			 Vertice last=this.G[i][j];
+			 Vertice init=this.G[i][j];
+			 int t=0;
+			 p.add(new Stato(last,t));
+			
+			// variabile per specificare se il percorso che creo è valido
+			boolean valido=true;
+			
+			// continuo ad inserire finchè diverso da goal
+			
+			while(!last.equals(goal)) {
+				// aggiungo padre dell'ultimo elemento
+				p.add(new Stato(last.getPadre(),p.get(p.size()-1).getIstante_temporale()+1));
+				last=last.getPadre();
+				if(last==null) {
+					valido=false;
+					break;
+				}
+			}
+			if(valido==true) {
+				Percorso pr=new Percorso(p, init, goal);
+				// inserisco il percorso nella variabile globale
+				allPath.put(init, pr);
+			}
+		}
+		 }
+	}
+	
+	
+	
 }
 
 // TODO algoritmo per il controllo dei conflitti cammini preesistenti, restituisce true se trova un conflitto
@@ -575,22 +618,22 @@ public class Griglia {
     private boolean isConflitto(Percorso p, List<Percorso> agenti) {
 
     	int start=p.getPercorso().get(0).getIstante_temporale();
-    	
-	for (int i = start; i < p.getPercorso().size()-1; i++) {
+    	int end=p.getPercorso().get(p.getPercorso().size()-1).getIstante_temporale();
+	for (int i = start; i < end; i++) {
 		for (Percorso a:agenti) {
-			if(i < a.getPercorso().size()-1){
-				// stato giï¿½ presente in un percorso, potrebbe essere anche l'init
+			// controllo di non passare in uno stato finale di un agente in un istante successivo
+			if ((p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice())) &&
+					(p.getPercorso().get(i).getIstante_temporale()>= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
+			return true;
+						
+			if(i < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
+				// stato già presente in un percorso, potrebbe essere anche l'init
 				if(p.getPercorso().get(i).equals(a.getPercorso().get(i)))
 					return true;
 				//scambio di posizione SCONTRO
 				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(i).getVertice()))
 						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+1).getVertice())))
 					return true;
-				
-			// controllo di non passare in uno stato finale di un agente in un istante successivo
-			if ((p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice())) &&
-					(p.getPercorso().get(i).getIstante_temporale()>= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
-				return true;
 			
 		}
 	}
@@ -598,54 +641,6 @@ public class Griglia {
 	return false;
 }
     
-
-/*
-public List<Stato> ReachGoalAlternativoOld(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
-    	
-		// dato che abbiamo espanso il percorso null si verifica che non ha padre allora ï¿½ isolato goal separati
-    	if(init.getListaAdiacenza().size()==1 || goal.getListaAdiacenza().size()==1 || init.getPadre()==null){
-			System.err.println("Init o goal isolato");
-			return null;
-		}
-		
-    	// controllo che i percorsi presistenti degli n agenti partano tutti da un vertice diverso e non uguale a init
-    	for (Percorso a : agenti) {
-			if(a.getPercorso().contains(new Stato(init,0))) {
-					System.err.println("ERRORE: Posizione iniziale agente uguale a init. Riprova!");
-					return null;
-			}
-    	}
-    	
-    	
-    	int t=0;
-  
-    	List<Vertice> percorso=new ArrayList<>();
-    	
-    	// ricostruisco il percorso a partire da init, ho aggiornato i pesi e i padri chiamando djikstra nel main
-    	percorso.add(this.G[init.getX()][init.getY()]);	
-    	// continuo ad inserire finchï¿½ diverso da init
-    	while(!percorso.get(percorso.size()-1).equals(goal) && t<max) {
-    		// aggiungo padre dell'ultimo elemento
-    		percorso.add(percorso.get(percorso.size()-1).getPadre());
-    		t++;
-    	}
-    	if (t>=max) return null;
-    	
-    	
-    	// inserisco in un array di stati
-    	List <Stato> res= new ArrayList<>();
-    	for (int i = 0; i < percorso.size(); i++) {
-			res.add(new Stato(percorso.get(i),i));
-		}
-    	
-		if(this.isConflitto(new Percorso(res,init,goal), agenti) == false)
-			return res;
-    	
-  
-		System.err.println("ERRORE: impossibile generare il percorso ");
-		return null;
-	}
-*/
 
 
     public Vertice[] generaInitGoal(List <Percorso> percorsi) {
@@ -731,7 +726,7 @@ public List<Stato> ReachGoalAlternativoOld(Griglia G, List<Percorso> agenti, Ver
 		}
 		return percorsi;
 }
-public List<Percorso> getPercorsi(){
+   public List<Percorso> getPercorsi(){
 	return percorsi;
 }
 
