@@ -9,7 +9,7 @@ public class Main {
 		Griglia griglia= new Griglia(dimensioni, (float) 0.5, (float) 0.1);
 		List<Percorso> agenti= new ArrayList<Percorso>();
 
-		agenti=griglia.generatoreIstanze(3);
+		agenti=griglia.generatoreIstanze(6);
 		Vertice[] v= griglia.generaInitGoal(agenti);
 		// stampo i percorsi degli agenti
 		griglia.printGrafo();

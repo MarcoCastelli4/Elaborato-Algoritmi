@@ -282,15 +282,15 @@ public class Griglia {
     	// controllo che ultimo elemento di array sia il goal
     	if(closed.get(closed.size()-1).equals(new Stato(goal, t))) {
     		
-    		// mettiamo il goal che è all'ultima posizione
+    		// mettiamo il goal che ï¿½ all'ultima posizione
     		res.add(closed.get(closed.size()-1));
-    		// mettiamo il padre di goal che è all'ultima posizione,  solo se init e goal sono diversi
+    		// mettiamo il padre di goal che ï¿½ all'ultima posizione,  solo se init e goal sono diversi
     		if(!init.equals(goal))
     			res.add(P.get(closed.get(closed.size()-1)));
     	}
 
 		if(res.contains(null)){
-			System.err.println("ERRORE: il goal è isolato. Riprova!");
+			System.err.println("ERRORE: il goal ï¿½ isolato. Riprova!");
 			return null;
 		}else{
     	// ripeto fino a che non sono in init con t=0
@@ -586,10 +586,10 @@ public class Griglia {
 			 int t=0;
 			 p.add(new Stato(last,t));
 			
-			// variabile per specificare se il percorso che creo è valido
+			// variabile per specificare se il percorso che creo ï¿½ valido
 			boolean valido=true;
 			
-			// continuo ad inserire finchè diverso da goal
+			// continuo ad inserire finchï¿½ diverso da goal
 			
 			while(!last.equals(goal)) {
 				// aggiungo padre dell'ultimo elemento
@@ -619,22 +619,21 @@ public class Griglia {
 
     	int start=p.getPercorso().get(0).getIstante_temporale();
     	int end=p.getPercorso().get(p.getPercorso().size()-1).getIstante_temporale();
-	for (int i = start; i < end; i++) {
+	for (int i = 0; i < p.getPercorso().size()-1; i++) {
 		for (Percorso a:agenti) {
 			// controllo di non passare in uno stato finale di un agente in un istante successivo
 			if ((p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice())) &&
 					(p.getPercorso().get(i).getIstante_temporale()>= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
 			return true;
 						
-			if(i < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
-				// stato già presente in un percorso, potrebbe essere anche l'init
-				if(p.getPercorso().get(i).equals(a.getPercorso().get(i)))
+			if(p.getPercorso().get(i).getIstante_temporale() < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
+				// stato giï¿½ presente in un percorso, potrebbe essere anche l'init
+				if(p.getPercorso().get(i).equals(a.getPercorso().get(p.getPercorso().get(i).getIstante_temporale())))
 					return true;
 				//scambio di posizione SCONTRO
-				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(i).getVertice()))
-						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+1).getVertice())))
+				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(p.getPercorso().get(i).getIstante_temporale()).getVertice()))
+						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(p.getPercorso().get(i+1).getIstante_temporale()).getVertice())))
 					return true;
-			
 		}
 	}
 }
