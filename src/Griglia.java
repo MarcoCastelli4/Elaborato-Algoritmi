@@ -404,7 +404,7 @@ public class Griglia {
 				}
 			}
 		}
-		System.err.println("ERRORE: impossibile generare il percorso ");
+		System.err.println("ReachGoal: impossibile generare il percorso ");
 		return null;
 	}
     
@@ -471,16 +471,19 @@ public class Griglia {
 			// ottengo percorso da v a goal sfruttando djikstra
 			if(allPath.containsKey(v)) {
 				Percorso p= new Percorso(allPath.get(v).getPercorso(),v,goal);
-				// aggiorno l'istante temporale del percorso
+				
 				
 		    	if(this.isConflitto(p, agenti,t)==false) {
 		    		List<Stato> res= ReconstructPath(init, v, P, t);
-		    		//inserisco i vertici dopo v
+		    		// aggiorno l'istante temporale del percorso
 					p=aggiornaIstantiTemporali(p,t);
+					//inserisco i vertici dopo v
+					if(v.equals(goal)==false) {
 		    		for (int i = 1; i < p.getPercorso().size(); i++) {
 						res.add(p.getPercorso().get(i));
 					}
 		    		return res;
+		    	}
 		    	}
 			}
 			
@@ -526,7 +529,7 @@ public class Griglia {
 				}
 			}
 		}
-		System.err.println("ERRORE: impossibile generare il percorso ");
+		System.err.println("ReachGoalAlternativa: impossibile generare il percorso ");
 		return null;
 	}
     
@@ -645,9 +648,7 @@ public class Griglia {
 	return false;
 }
     
-
-
-    public Vertice[] generaInitGoal(List <Percorso> percorsi) {
+    public Vertice[] generaInitGoal(int max) {
 	   
 	   // indici init
        int i;
@@ -655,25 +656,16 @@ public class Griglia {
        int g;
        do {
        
-    	   // INIT - controllo che non sia un ostacolo
-    	   Random random = new Random();
-    	   i = random.nextInt(listaVerticiValidi.size());
-    	  
-       // GOAL - controllo che non sia un ostacolo
-       
-       boolean valido;
-       do {
-    	   valido=true;
-    	   g = random.nextInt(listaVerticiValidi.size());
+    	  // INIT - controllo che non sia un ostacolo
+    	Random random = new Random();
+    	i = random.nextInt(listaVerticiValidi.size());
+       // GOAL - controllo che non sia un ostacolo       
+    	g = i + random.nextInt(max)/2;
+    	if(g>listaVerticiValidi.size()) {
+    		g=g-listaVerticiValidi.size();
+    	}
     	   
-    	// se genero un goal che � all'interno delle celle visitate da un altro percorso, non � valido
-    	   for (Percorso percorso : percorsi) {
-				for (Vertice vertice : percorso.getAllVertici()) {
-			        if (vertice.equals(listaVerticiValidi.get(g))) 
-			        	valido=false;
-			    }
-    	   }
-       }while(!valido);
+    	
        }while(listaVerticiValidi.get(i).equals(listaVerticiValidi.get(g)));
        
        Vertice[] result = new Vertice[2];
@@ -682,40 +674,38 @@ public class Griglia {
        return result;
    }
    
-   public List<Percorso> generatoreIstanze(int numero_agenti){
-    	int max=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
+   public List<Percorso> generatoreIstanze(int numero_agenti,int max){
+    	int maxAss=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
     	int istanti_max = 0;
     	int i=0;
 		int j=0;
 
-    	while(i<numero_agenti) {
+		
+    	while(i<numero_agenti && max< (maxAss + istanti_max)) {
+    		for (Percorso p : percorsi) {
+    			if(istanti_max<p.getPercorso().size())
+    				istanti_max=p.getPercorso().size();
+    		}
+    		
     		if(j>=10){
 				System.err.println("Non è possibile generare "+ numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
 				break;
 			} else{
 			Vertice init,goal;
     		
-    		Vertice[] res=generaInitGoal(percorsi);
+    		Vertice[] res=generaInitGoal(max);
     		init=res[0];
     		goal=res[1];
     		
     		Percorso t=null;
-    		if(i==0 && j<10) {
+    		if(j<10) {
     			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal);
 				if(t.getPercorso()==null){
 					j++;
 				} else {
 					j=0;
 				}
-		}
-				if(i!=0 && j<10){
-        		t=new Percorso(ReachGoal(this, percorsi, init, goal, max+istanti_max),init,goal);
-				if(t.getPercorso()==null || t ==null){
-				j++;
-			} else {
-				j=0;
-			}
-		}
+    		}
     		
     		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
     			System.out.println("Trovato il percorso dell'agente "+i);
