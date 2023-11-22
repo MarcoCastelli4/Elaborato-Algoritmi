@@ -120,5 +120,9 @@ public class Vertice implements Comparable<Vertice>{
 			return 1;
 		return 0;
 	}	
+
+	public String toString() {
+		return "x: "+ this.getX() + ", y: "+this.getY();
+	}
 	
 }

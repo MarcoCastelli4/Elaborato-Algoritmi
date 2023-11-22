@@ -238,6 +238,10 @@ public class Griglia {
 			}
 			System.out.println();
 		}
+		System.out.println("Vertici toccati");
+		for (int i = 0; i < p.getPercorso().size(); i++) {
+			System.out.print(p.getPercorso().get(i).getVertice().toString() + " --> ");
+		}
 		
 	}
 	
@@ -466,12 +470,13 @@ public class Griglia {
 			
 			// ottengo percorso da v a goal sfruttando djikstra
 			if(allPath.containsKey(v)) {
-				Percorso p= allPath.get(v);
+				Percorso p= new Percorso(allPath.get(v).getPercorso(),v,goal);
 				// aggiorno l'istante temporale del percorso
-				p=aggiornaIstantiTemporali(p,t);
-		    	if(this.isConflitto(p, agenti)==false) {
+				
+		    	if(this.isConflitto(p, agenti,t)==false) {
 		    		List<Stato> res= ReconstructPath(init, v, P, t);
 		    		//inserisco i vertici dopo v
+					p=aggiornaIstantiTemporali(p,t);
 		    		for (int i = 1; i < p.getPercorso().size(); i++) {
 						res.add(p.getPercorso().get(i));
 					}
@@ -615,7 +620,7 @@ public class Griglia {
 
 // TODO algoritmo per il controllo dei conflitti cammini preesistenti, restituisce true se trova un conflitto
     
-    private boolean isConflitto(Percorso p, List<Percorso> agenti) {
+    private boolean isConflitto(Percorso p, List<Percorso> agenti,int t) {
 
     	int start=p.getPercorso().get(0).getIstante_temporale();
     	int end=p.getPercorso().get(p.getPercorso().size()-1).getIstante_temporale();
@@ -623,16 +628,16 @@ public class Griglia {
 		for (Percorso a:agenti) {
 			// controllo di non passare in uno stato finale di un agente in un istante successivo
 			if ((p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice())) &&
-					(p.getPercorso().get(i).getIstante_temporale()>= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
+					(((p.getPercorso().get(i).getIstante_temporale())+t) >= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
 			return true;
 						
-			if(p.getPercorso().get(i).getIstante_temporale() < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
+			if(((p.getPercorso().get(i).getIstante_temporale())+t) < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
 				// stato gi� presente in un percorso, potrebbe essere anche l'init
-				if(p.getPercorso().get(i).equals(a.getPercorso().get(p.getPercorso().get(i).getIstante_temporale())))
+				if(p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+t).getVertice()))
 					return true;
 				//scambio di posizione SCONTRO
-				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(p.getPercorso().get(i).getIstante_temporale()).getVertice()))
-						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(p.getPercorso().get(i+1).getIstante_temporale()).getVertice())))
+				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(i+t).getVertice()))
+						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+1+t).getVertice())))
 					return true;
 		}
 	}
