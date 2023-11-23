@@ -6,45 +6,40 @@ public class Main {
 	public static void main(String[] args) {
 		int max=30;
 		
-		Dimensioni dimensioni=new Dimensioni(3, 3);
-		Griglia griglia= new Griglia(dimensioni, (float) 0.7, (float) 0.1);
+		Dimensioni dimensioni=new Dimensioni(10, 10);
+		Griglia griglia= new Griglia(dimensioni, (float) 0.3, (float) 0.1);
 		List<Percorso> agenti= new ArrayList<Percorso>();
 
-		agenti=griglia.generatoreIstanze(4,max);
-		
-		Vertice[] v= griglia.generaInitGoal(max);
+		agenti=griglia.generatoreIstanze(15,max);
 		// stampo i percorsi degli agenti
-		//griglia.printGrafo();
-				
-		System.out.println("x:"+ v[0].getX()+",y: "+v[0].getY()); //init
-		System.out.println("x:"+ v[1].getX()+",y: "+v[1].getY()); //goal 
+		griglia.printGrafo();
+
+		Vertice[] v= griglia.generaInitGoal(max);	
+		System.out.println("init -> x:"+ v[0].getX()+",y: "+v[0].getY()); //init
+		System.out.println("goal -> x:"+ v[1].getX()+",y: "+v[1].getY()); //goal 
 		
 		// eseguo il djkstra per il goal
 		griglia.Dijkstra(griglia,v[1]);
 		
-		Percorso pri=new Percorso(griglia.ReachGoal(griglia, agenti,v[0], v[1], max),v[0],v[1]);
-		
-		
-		// REACH ORIGINALE
-		if(pri.getPercorso() != null){
-			System.out.println("Percorso n+1 trovato!");
-			//griglia.printPercorso(pri);
-		}else{
+		// REACH GOAL ORIGINALE
+		ReachGoal pri=griglia.ReachGoal(griglia, agenti,v[0], v[1], max);
+		if(pri == null || pri.getPercorso() == null ){
 			System.err.println("ERRORE: Percorso dell'agente n+1 non trovato!!!");
-		}
-		
-		Percorso alt=new Percorso(griglia.ReachGoalAlternativo(griglia, agenti,v[0], v[1], max),v[0],v[1]);
-		
-		//REACH GOAL ALT
-		if(alt.getPercorso() != null){
-			System.out.println("Alternativa - Percorso n+1 trovato!");
-			//griglia.printPercorso(alt);
 		}else{
-			System.err.println("Alternativa - ERRORE: Percorso dell'agente n+1 non trovato!!!");
+			System.out.println("\nPercorso n+1 trovato!");
+			griglia.printPercorso(pri);
 		}
 		
-		
-		
+		// REACH GOAL ALTERNATIVO
+		ReachGoal alt=griglia.ReachGoalAlternativo(griglia, agenti,v[0], v[1], max);
+
+		if(alt == null || alt.getPercorso() == null){
+			System.err.println("Alternativa - ERRORE: Percorso dell'agente n+1 non trovato!!!");
+			
+		}else{
+			System.out.println("\nAlternativa - Percorso n+1 trovato!");
+			griglia.printPercorso(alt);
+		}
 		
 	}
 
