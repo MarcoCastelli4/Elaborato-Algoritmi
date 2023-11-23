@@ -309,7 +309,7 @@ public class Griglia {
     	
     }
 
-    public List<Stato> ReachGoal(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
+    public ReachGoal ReachGoal(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
     	
     	// Liste di stati
     	open = new ArrayList<>();
@@ -362,7 +362,19 @@ public class Griglia {
 			closed.add(minStato);
 			
 			if (minStato.getVertice().equals(goal)) {
-				return ReconstructPath(init,goal,P,minStato.getIstante_temporale());
+				
+				Percorso r= new Percorso(ReconstructPath(init,goal,P,minStato.getIstante_temporale()), init, goal);
+				
+				int wait=0;
+				
+				for (int i = 0; i < r.getPercorso().size()-1; i++) {
+					// wait
+					if(r.getPercorso().get(i).getVertice().equals(r.getPercorso().get(i+1).getVertice()))
+						wait++;
+				}
+				return new ReachGoal(r.getPercorso(), P.size(),closed.size(), r.getPercorso().size()-1,r.getPeso(), wait);
+				
+				
 			}
 			
 			// parte 3
@@ -699,9 +711,9 @@ public class Griglia {
     		init=res[0];
     		goal=res[1];
     		
-    		Percorso t=null;
+    		ReachGoal t=null;
     		if(j<10) {
-    			t=new Percorso(ReachGoal(this, percorsi, init, goal, max),init,goal);
+    			t=new ReachGoal(ReachGoal(this, percorsi, init, goal, max));
 				if(t.getPercorso()==null){
 					j++;
 				} else {
@@ -727,5 +739,6 @@ public class Griglia {
 	public Vertice getVertice(int x, int y) {
 		return this.G[x][y];
 	}
+	
 }
 
