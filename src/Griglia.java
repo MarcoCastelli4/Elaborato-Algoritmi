@@ -342,9 +342,10 @@ public class Griglia {
 		f.put(new Stato(init,0), h(init,goal));
 		P.put(new Stato(init,0),null);
 		
-		double min= Double.POSITIVE_INFINITY;
+		
 		while(!open.isEmpty()) {	
 			Stato minStato=open.get(0);
+			double min= Double.POSITIVE_INFINITY;
 			// riga 13
 			for (Stato stato : open) {
 				Double gValue = g.get(stato);
@@ -369,7 +370,7 @@ public class Griglia {
 						// wait
 						if(r.getPercorso().get(i).getVertice().equals(r.getPercorso().get(i+1).getVertice()))
 							wait++;
-					}
+					}			
 					return new ReachGoal(r.getPercorso(), P.size(),closed.size(), r.getPercorso().size()-1,r.getPeso(), wait);
 				}
 				return null;
@@ -646,7 +647,6 @@ public class Griglia {
 // TODO algoritmo per il controllo dei conflitti cammini preesistenti, restituisce true se trova un conflitto
     
     private boolean isConflitto(Percorso p, List<Percorso> agenti,int t) {
-
 	for (int i = 0; i < p.getPercorso().size()-1; i++) {
 		for (Percorso a:agenti) {
 			// controllo di non passare in uno stato finale di un agente in un istante successivo
@@ -662,9 +662,18 @@ public class Griglia {
 				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(i+t).getVertice()))
 						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+1+t).getVertice())))
 					return true;
+			}
 		}
-	}
+		// controllo che non ci siano collisioni con il goal
+		for (Percorso a:agenti) {
+			if(((p.getPercorso().get(p.getPercorso().size()-1).getIstante_temporale())+t) < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
+				if(p.getPercorso().get(p.getPercorso().size()-1).getVertice().equals(a.getPercorso().get((p.getPercorso().size()-1)+t).getVertice()))
+					return true;
+			}
+		}
 }
+
+	
 	return false;
 }
     

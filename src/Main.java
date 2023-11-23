@@ -7,10 +7,10 @@ public class Main {
 		int max=30;
 		
 		Dimensioni dimensioni=new Dimensioni(10, 10);
-		Griglia griglia= new Griglia(dimensioni, (float) 0.3, (float) 0.1);
+		Griglia griglia= new Griglia(dimensioni, (float) 0.5, (float) 0.1);
 		List<Percorso> agenti= new ArrayList<Percorso>();
 
-		agenti=griglia.generatoreIstanze(15,max);
+		agenti=griglia.generatoreIstanze(5,max);
 		// stampo i percorsi degli agenti
 		griglia.printGrafo();
 
