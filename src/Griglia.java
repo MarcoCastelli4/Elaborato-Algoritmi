@@ -339,13 +339,14 @@ public class Griglia {
 		// g � il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
 		g.put(new Stato(init,0), 0.0);
 		f.put(new Stato(init,0), h(init,goal));
+		P.put(new Stato(init,0),null);
 		
-		while(!open.isEmpty()) {
-			
+		double min= Double.POSITIVE_INFINITY;
+		int c=0;
+		int n_open=1;
+		while(!open.isEmpty()) {	
+			c++;
 			Stato minStato=open.get(0);
-		
-			double min= Double.POSITIVE_INFINITY;
-			
 			// riga 13
 			for (Stato stato : open) {
 				Double gValue = g.get(stato);
@@ -399,6 +400,7 @@ public class Griglia {
 						}
 						if (!open.contains(new Stato(n,t+1))) {
 							open.add(new Stato(n,t+1));
+							n_open++;
 						}
 					}
 				}
@@ -710,11 +712,9 @@ public class Griglia {
     		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
     			System.out.println("Trovato il percorso dell'agente "+i);
 				percorsi.add(t);
-    			istanti_max= percorsi.get(i).getPercorso().size()-1;
+    			//istanti_max= percorsi.get(i).getPercorso().size()-1;
     			i++;
     		}
-    		
-    	
     }
 	
 		}

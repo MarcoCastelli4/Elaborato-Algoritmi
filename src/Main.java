@@ -6,8 +6,8 @@ public class Main {
 	public static void main(String[] args) {
 		int max=30;
 		
-		Dimensioni dimensioni=new Dimensioni(100, 100);
-		Griglia griglia= new Griglia(dimensioni, (float) 0.5, (float) 0.1);
+		Dimensioni dimensioni=new Dimensioni(3, 3);
+		Griglia griglia= new Griglia(dimensioni, (float) 0.7, (float) 0.1);
 		List<Percorso> agenti= new ArrayList<Percorso>();
 
 		agenti=griglia.generatoreIstanze(4,max);

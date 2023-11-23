@@ -31,4 +31,8 @@ public class Stato {
 	public int hashCode() {
         return getIstante_temporale()*getVertice().hashCode();
     }
+
+	public String toString(){
+		return "vertice "+ this.getVertice().toString()+", t:" + this.getIstante_temporale();
+	}
 	}
