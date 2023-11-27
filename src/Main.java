@@ -6,20 +6,17 @@ public class Main {
 	public static void main(String[] args) {
 		int max=30;
 		
-		Dimensioni dimensioni=new Dimensioni(10, 10);
-		Griglia griglia= new Griglia(dimensioni, (float) 0.5, (float) 0.1);
+		Dimensioni dimensioni=new Dimensioni(20,20);
+		Griglia griglia= new Griglia(dimensioni, 0.7, 0.1);
 		List<Percorso> agenti= new ArrayList<Percorso>();
 
-		agenti=griglia.generatoreIstanze(5,max);
+		agenti=griglia.generatoreIstanze(4,max);
 		// stampo i percorsi degli agenti
-		griglia.printGrafo();
+		griglia.printAgenti();
 
 		Vertice[] v= griglia.generaInitGoal(max);	
 		System.out.println("init -> x:"+ v[0].getX()+",y: "+v[0].getY()); //init
 		System.out.println("goal -> x:"+ v[1].getX()+",y: "+v[1].getY()); //goal 
-		
-		// eseguo il djkstra per il goal
-		griglia.Dijkstra(griglia,v[1]);
 		
 		// REACH GOAL ORIGINALE
 		ReachGoal pri=griglia.ReachGoal(griglia, agenti,v[0], v[1], max);
@@ -30,6 +27,9 @@ public class Main {
 			griglia.printPercorso(pri);
 		}
 		
+		
+		// eseguo il djkstra per il goal
+		griglia.Dijkstra(griglia,v[1]);
 		// REACH GOAL ALTERNATIVO
 		ReachGoal alt=griglia.ReachGoalAlternativo(griglia, agenti,v[0], v[1], max);
 
