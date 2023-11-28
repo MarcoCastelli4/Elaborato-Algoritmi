@@ -37,7 +37,17 @@ public class Griglia {
 	List<ReachGoal> reachGoals =new ArrayList<ReachGoal>();
 	// Percorsi creati da dijkstra
 	Map<Vertice, Percorso> allPath=new HashMap<Vertice, Percorso>();
-	
+
+	public double getPercentuale_celle_attraversabili() {
+		return percentuale_celle_attraversabili;
+	}
+
+	public double getFattore_agglomerazione_ostacoli() {
+		return fattore_agglomerazione_ostacoli;
+	}
+
+	private double percentuale_celle_attraversabili;
+	private double fattore_agglomerazione_ostacoli;
 	
 	public Griglia(Dimensioni dimensioni, double percentuale_celle_attraversabili, double fattore_agglomerazione_ostacoli) {
 		if(percentuale_celle_attraversabili<0.0 || percentuale_celle_attraversabili>1.0 || fattore_agglomerazione_ostacoli<0.0 || fattore_agglomerazione_ostacoli>1.0)
@@ -46,8 +56,10 @@ public class Griglia {
 			this.dimensioni= new Dimensioni(dimensioni.getRighe(),dimensioni.getColonne());
 			this.numero_ostacoli_MAX=(int) (dimensioni.getRighe()*dimensioni.getColonne()*(1.0-percentuale_celle_attraversabili));
 			this.numero_ostacoli=0;
-						
-			G=generatoreGriglia(dimensioni,percentuale_celle_attraversabili,fattore_agglomerazione_ostacoli);
+			this.percentuale_celle_attraversabili=percentuale_celle_attraversabili;
+			this.fattore_agglomerazione_ostacoli=fattore_agglomerazione_ostacoli;
+
+			G=generatoreGriglia();
 			
 			// aggiorno la lista dei vertici validi
 			for (int i = 0; i < dimensioni.getRighe(); i++) {
@@ -132,7 +144,7 @@ public class Griglia {
         
     }
     
-	private Vertice[][] generatoreGriglia(Dimensioni dimensioni, double percentuale_celle_attraversabili, double fattore_agglomerazione_ostacoli) {
+	private Vertice[][] generatoreGriglia() {
 		
 		G=new Vertice[dimensioni.getRighe()][dimensioni.getColonne()];
 		Random random = new Random();
@@ -334,7 +346,7 @@ public class Griglia {
     	
 		open.add(new Stato(init,0));
 		
-		// g ï¿½ il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
+		// g è il costo per raggiungere il vertice (parametro 1) specificato all'istante parametro 2, con costo parametro (3)
 		g.put(new Stato(init,0), 0.0);
 		f.put(new Stato(init,0), h(init,goal));
 		P.put(new Stato(init,0),null);
@@ -414,7 +426,7 @@ public class Griglia {
 				}
 			}
 		}
-		System.err.println("ReachGoal: impossibile generare il percorso ");
+		System.err.println("ReachGoal: impossibile generare il percorso");
 		return null;
 	}
     
@@ -481,6 +493,7 @@ public class Griglia {
 					}
 					return new ReachGoal(r.getPercorso(), P.size(),closed.size(), r.getPercorso().size()-1,r.getPeso(), wait);
 				}
+				return null;
 			}
 			
 			int t=minStato.getIstante_temporale();
@@ -502,16 +515,16 @@ public class Griglia {
 						res.add(p.getPercorso().get(i));
 					}
 					Percorso l= new Percorso(res,init,goal);
-					if (l.getPercorso().size()>max)
+					// ho creato un percorso il cui istante temporale > max
+					if (l.getPercorso().get(l.getPercorso().size()-1).getIstante_temporale()>max) {
+						System.err.println("Reach Goal Alternativa - Errore superato l'orizzonte temporale max!");
 						return null;
+					}
 		    		return new ReachGoal(res, P.size(), closed.size(), res.size()-1, l.getPeso(), wait);
 					}
 		    	}
 		    	
 			}
-			
-			
-	    	
 	    	// --- FINE ALTERNATIVA ------------
 			// parte 3
 			
@@ -705,7 +718,7 @@ public class Griglia {
     	int maxAss=(dimensioni.getRighe()*dimensioni.getColonne()) -numero_ostacoli;
     	int istanti_max = 0;
     	int i=0;
-		int j=0;
+		int j=1;
 
 		
     	while(i<numero_agenti && max< (maxAss + istanti_max)) {
@@ -714,7 +727,7 @@ public class Griglia {
     				istanti_max=p.getPercorso().size();
     		}
     		
-    		if(j>=10){
+    		if(j>10){
 				System.err.println("Numero massimo iterazioni per ricerca agenti raggiunto. Non Ã¨ possibile generare "+ numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
 				break;
 			} else{
@@ -729,17 +742,15 @@ public class Griglia {
     			t=ReachGoal(this, percorsi, init, goal, max);
 				if(t==null || t.getPercorso()==null){
 					j++;
-				} else {
-					j=0;
 				}
     		}
     		
     		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
-    			System.out.println("Trovato il percorso dell'agente "+i);
+    			System.out.println("Trovato il percorso dell'agente "+i + " con un numero "+ j + " di invocazioni di ReachGoal");
 				percorsi.add(new Percorso(t.getPercorso(),init,goal));
 				reachGoals.add(t);
-    			//istanti_max= percorsi.get(i).getPercorso().size()-1;
     			i++;
+				j=1;
     		}
     }
 	
