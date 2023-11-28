@@ -197,8 +197,8 @@ public class Griglia {
 		int agente=0;
 		for (ReachGoal r : reachGoals) {
 			System.out.println("Agente " + agente);
-			System.out.println("Init si trova: x: "+ r.getPercorso().get(0).getVertice().getX()+ "y: "+ r.getPercorso().get(0).getVertice().getY());
-        	System.out.println("Il goal si trova: x: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getX()+ "y: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getY());
+			System.out.println("Init si trova: x: "+ r.getPercorso().get(0).getVertice().getX()+ " ; y: "+ r.getPercorso().get(0).getVertice().getY());
+        	System.out.println("Il goal si trova: x: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getX()+ " ; y: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getY());
 			System.out.println(r.toString());
 			String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
 			for (int i = 0; i < dimensioni.getRighe(); i++) {
@@ -233,8 +233,8 @@ public class Griglia {
 	
 	// Funzione utilizzata per la stampa del percorso cercato
 	public void printPercorso(ReachGoal r) {
-			System.out.println("Init si trova: x: "+ r.getPercorso().get(0).getVertice().getX()+ "y: "+ r.getPercorso().get(0).getVertice().getY());
-        	System.out.println("Il goal si trova: x: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getX()+ "y: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getY());
+			System.out.println("Init si trova: x: "+ r.getPercorso().get(0).getVertice().getX()+ " ; y: "+ r.getPercorso().get(0).getVertice().getY());
+        	System.out.println("Il goal si trova: x: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getX()+ " ; y: "+r.getPercorso().get(r.getPercorso().size()-1).getVertice().getY());
 			System.out.println(r.toString());
 			String[][] grafo =new  String[dimensioni.getRighe()][dimensioni.getColonne()];
 			for (int i = 0; i < dimensioni.getRighe(); i++) {
@@ -298,22 +298,15 @@ public class Griglia {
     	List<Stato> res=new ArrayList<>();
     	Stato tmp=new Stato(goal,t);
     	Stato i=new Stato(init,0);
-    	
-    	if (init.equals(goal))
-    		return null;
-    	
+
     	while(!tmp.equals(i)) {
     		if(P.containsKey(tmp)) {
     			res.add(tmp);
     			tmp=P.get(tmp);
     		}
-    		else return null;
     	}
     	//aggiungo init
     	res.add(tmp);
-    	if(res.contains(null))
-    		return null;
-    	
     	Collections.reverse(res);
     	return res;
     	
@@ -352,16 +345,15 @@ public class Griglia {
 		P.put(new Stato(init,0),null);
 		
 		
-		while(!open.isEmpty()) {	
+		while(!open.isEmpty()) {
+			// Prendo lo stato in open con il più piccolo valore di f
 			Stato minStato=open.get(0);
 			double min= Double.POSITIVE_INFINITY;
 			// riga 13
 			for (Stato stato : open) {
-				Double gValue = g.get(stato);
-			    double currentCost = (gValue != null) ? gValue : Double.POSITIVE_INFINITY;
-
-			    if (currentCost + h(stato.getVertice(), goal) < min) {
-			        min = currentCost + h(stato.getVertice(), goal);
+			    double currentCost = f.get(stato);
+			    if (currentCost< min) {
+			        min = currentCost;
 			        minStato = stato;
 			    }
 			}
@@ -370,20 +362,14 @@ public class Griglia {
 			closed.add(minStato);
 			
 			if (minStato.getVertice().equals(goal)) {
-				
 				Percorso r= new Percorso(ReconstructPath(init,goal,P,minStato.getIstante_temporale()), init, goal);
-				
 				int wait=0;
-				if(r!=null && r.getPercorso()!=null){
-					for (int i = 0; i < r.getPercorso().size()-1; i++) {
-						// wait
-						if(r.getPercorso().get(i).getVertice().equals(r.getPercorso().get(i+1).getVertice()))
-							wait++;
-					}			
-					return new ReachGoal(r.getPercorso(), P.size(),closed.size(), r.getPercorso().size()-1,r.getPeso(), wait);
+				for (int i = 0; i < r.getPercorso().size()-1; i++) {
+					// wait
+					if(r.getPercorso().get(i).getVertice().equals(r.getPercorso().get(i+1).getVertice()))
+						wait++;
 				}
-				return null;
-				
+				return new ReachGoal(r.getPercorso(), P.size(),closed.size(), r.getPercorso().size()-1,r.getPeso(), wait);
 			}
 			
 			// parte 3
@@ -391,7 +377,7 @@ public class Griglia {
 			Vertice v=minStato.getVertice();
 			if (t<max) {
 				for (Vertice n : v.getListaAdiacenza().keySet()) {
-					if(!closed.contains(new Stato(n,t))) {
+					if(!closed.contains(new Stato(n,t+1))) {
 						boolean traversable=true;
 						
 						for (Percorso a : agenti) {
@@ -418,10 +404,11 @@ public class Griglia {
 						        g.put(new Stato(n, t + 1), currentCost + v.getListaAdiacenza().get(n));
 						        f.put(new Stato(n, t + 1), g.get(new Stato(n, t + 1)) + h(n, goal));
 						    }
+							if (!open.contains(new Stato(n,t+1))) {
+								open.add(new Stato(n,t+1));
+							}
 						}
-						if (!open.contains(new Stato(n,t+1))) {
-							open.add(new Stato(n,t+1));
-						}
+
 					}
 				}
 			}
@@ -463,37 +450,30 @@ public class Griglia {
 		f.put(new Stato(init,0), h(init,goal));
 		
 		while(!open.isEmpty()) {
-			
+			// Prendo lo stato in open con il più piccolo valore di f
 			Stato minStato=open.get(0);
-		
 			double min= Double.POSITIVE_INFINITY;
-			
 			// riga 13
 			for (Stato stato : open) {
-				Double gValue = g.get(stato);
-			    double currentCost = (gValue != null) ? gValue : Double.POSITIVE_INFINITY;
-
-			    if (currentCost + h(stato.getVertice(), goal) < min) {
-			        min = currentCost + h(stato.getVertice(), goal);
-			        minStato = stato;
-			    }
+				double currentCost = f.get(stato);
+				if (currentCost< min) {
+					min = currentCost;
+					minStato = stato;
+				}
 			}
 			
 			open.remove(minStato);
 			closed.add(minStato);
 			
 			if (minStato.getVertice().equals(goal)) {
+
 				Percorso r= new Percorso(ReconstructPath(init,goal,P,minStato.getIstante_temporale()), init, goal);
-				
-				if(r!=null && r.getPercorso()!=null){
 					for (int i = 0; i < r.getPercorso().size()-1; i++) {
 						// wait
 						if(r.getPercorso().get(i).getVertice().equals(r.getPercorso().get(i+1).getVertice()))
 							wait++;
 					}
 					return new ReachGoal(r.getPercorso(), P.size(),closed.size(), r.getPercorso().size()-1,r.getPeso(), wait);
-				}
-				return null;
 			}
 			
 			int t=minStato.getIstante_temporale();
@@ -517,7 +497,7 @@ public class Griglia {
 					Percorso l= new Percorso(res,init,goal);
 					// ho creato un percorso il cui istante temporale > max
 					if (l.getPercorso().get(l.getPercorso().size()-1).getIstante_temporale()>max) {
-						System.err.println("Reach Goal Alternativa - Errore superato l'orizzonte temporale max!");
+						System.err.println("Percorso Rilassato - Errore superato l'orizzonte temporale max!");
 						return null;
 					}
 		    		return new ReachGoal(res, P.size(), closed.size(), res.size()-1, l.getPeso(), wait);
@@ -530,7 +510,7 @@ public class Griglia {
 			
 			if (t<max) {
 				for (Vertice n : v.getListaAdiacenza().keySet()) {
-					if(!closed.contains(new Stato(n,t))) {
+					if(!closed.contains(new Stato(n,t+1))) {
 						boolean traversable=true;
 						
 						for (Percorso a : agenti) {
@@ -557,10 +537,11 @@ public class Griglia {
 						        g.put(new Stato(n, t + 1), currentCost + v.getListaAdiacenza().get(n));
 						        f.put(new Stato(n, t + 1), g.get(new Stato(n, t + 1)) + h(n, goal));
 						    }
+							if (!open.contains(new Stato(n,t+1))) {
+								open.add(new Stato(n,t+1));
+							}
 						}
-						if (!open.contains(new Stato(n,t+1))) {
-							open.add(new Stato(n,t+1));
-						}
+
 					}
 				}
 			}
@@ -660,30 +641,26 @@ public class Griglia {
     // algoritmo per il controllo dei conflitti cammini preesistenti, restituisce true se trova un conflitto
     
     private boolean isConflitto(Percorso p, List<Percorso> agenti,int t) {
-	for (int i = 0; i < p.getPercorso().size()-1; i++) {
+	for (int i = 0; i < p.getPercorso().size(); i++) {
 		for (Percorso a:agenti) {
 			// controllo di non passare in uno stato finale di un agente in un istante successivo
 			if ((p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice())) &&
 					(((p.getPercorso().get(i).getIstante_temporale())+t) >= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
 			return true;
 						
-			if(((p.getPercorso().get(i).getIstante_temporale())+t) < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
+			if(((p.getPercorso().get(i).getIstante_temporale())+t) < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()) {
 				// stato già presente in un percorso, potrebbe essere anche l'init
-				if(p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+t).getVertice()))
+				if (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i + t).getVertice()))
 					return true;
 				//scambio di posizione SCONTRO
-				if((p.getPercorso().get(i+1).getVertice().equals(a.getPercorso().get(i+t).getVertice()))
-						&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i+1+t).getVertice())))
-					return true;
+				if (i < p.getPercorso().size() - 1) {
+					if ((p.getPercorso().get(i + 1).getVertice().equals(a.getPercorso().get(i + t).getVertice()))
+							&& (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i + 1 + t).getVertice())))
+						return true;
+				}
 			}
 		}
-		// controllo che non ci siano collisioni con il goal
-		for (Percorso a:agenti) {
-			if(((p.getPercorso().get(p.getPercorso().size()-1).getIstante_temporale())+t) < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()){
-				if(p.getPercorso().get(p.getPercorso().size()-1).getVertice().equals(a.getPercorso().get((p.getPercorso().size()-1)+t).getVertice()))
-					return true;
-			}
-		}
+		
 }
 
 	
@@ -703,9 +680,6 @@ public class Griglia {
     	i = random.nextInt(listaVerticiValidi.size());
        // GOAL - controllo che non sia un ostacolo       
     	g = random.nextInt(listaVerticiValidi.size());
-    	
-    	   
-    	
        }while(listaVerticiValidi.get(i).equals(listaVerticiValidi.get(g)));
        
        Vertice[] result = new Vertice[2];
@@ -728,7 +702,7 @@ public class Griglia {
     		}
     		
     		if(j>10){
-				System.err.println("Numero massimo iterazioni per ricerca agenti raggiunto. Non Ã¨ possibile generare "+ numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
+				System.err.println("Numero massimo iterazioni per ricerca agenti raggiunto. Non è possibile generare "+ numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
 				break;
 			} else{
 			Vertice init,goal;
@@ -738,7 +712,7 @@ public class Griglia {
     		goal=res[1];
     		
     		ReachGoal t=null;
-    		if(j<10) {
+    		if(j<=10) {
     			t=ReachGoal(this, percorsi, init, goal, max);
 				if(t==null || t.getPercorso()==null){
 					j++;
