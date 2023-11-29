@@ -500,6 +500,11 @@ public class Griglia {
 						System.err.println("Percorso Rilassato - Errore superato l'orizzonte temporale max!");
 						return null;
 					}
+					for (int i = 0; i < res.size()-1; i++) {
+							// wait
+						if(res.get(i).getVertice().equals(res.get(i+1).getVertice()))
+							wait++;
+					}
 		    		return new ReachGoal(res, P.size(), closed.size(), res.size()-1, l.getPeso(), wait);
 					}
 		    	}
@@ -647,7 +652,8 @@ public class Griglia {
 			if ((p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(a.getPercorso().size()-1).getVertice())) &&
 					(((p.getPercorso().get(i).getIstante_temporale())+t) >= a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()))
 			return true;
-						
+
+			// controllo solo se il percorso dell'agente è più corto
 			if(((p.getPercorso().get(i).getIstante_temporale())+t) < a.getPercorso().get(a.getPercorso().size()-1).getIstante_temporale()) {
 				// stato già presente in un percorso, potrebbe essere anche l'init
 				if (p.getPercorso().get(i).getVertice().equals(a.getPercorso().get(i + t).getVertice()))

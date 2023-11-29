@@ -5,7 +5,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		int max=10;
-		int numero_agenti=3;
+		int numero_agenti=5;
 		Dimensioni dimensioni=new Dimensioni(10,10);
 		Griglia griglia= new Griglia(dimensioni, 0.5, 0.1);
 		List<Percorso> agenti= new ArrayList<Percorso>();
