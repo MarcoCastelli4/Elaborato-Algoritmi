@@ -5,12 +5,8 @@ public class Dimensioni {
 	private int colonne;
 	
 	public Dimensioni(int righe, int colonne) {
-		if(righe<=0 || colonne<=0 )
-			throw new IllegalArgumentException();
-		else {
-			this.righe=righe;
-			this.colonne=colonne;
-		}
+		this.righe=righe;
+		this.colonne=colonne;
 	}
 	
 	public int getRighe() {
@@ -25,7 +21,4 @@ public class Dimensioni {
 	public void setColonne(int colonne) {
 		this.colonne = colonne;
 	}
-	
-	
-
 }

@@ -16,9 +16,7 @@ public class Griglia {
 	
 	//durante la creaizone dei cluster
 	private int numero_ostacoli;
-	
-	private List<Vertice> listaOstacoli=new ArrayList<Vertice>();
-	
+
 	private List<Vertice> listaVerticiValidi=new ArrayList<Vertice>();
 	
 	// Liste di stati
@@ -50,26 +48,12 @@ public class Griglia {
 	private double fattore_agglomerazione_ostacoli;
 	
 	public Griglia(Dimensioni dimensioni, double percentuale_celle_attraversabili, double fattore_agglomerazione_ostacoli) {
-		if(percentuale_celle_attraversabili<0.0 || percentuale_celle_attraversabili>1.0 || fattore_agglomerazione_ostacoli<0.0 || fattore_agglomerazione_ostacoli>1.0)
-			throw new IllegalArgumentException();
-		else {
-			this.dimensioni= new Dimensioni(dimensioni.getRighe(),dimensioni.getColonne());
-			this.numero_ostacoli_MAX=(int) (dimensioni.getRighe()*dimensioni.getColonne()*(1.0-percentuale_celle_attraversabili));
-			this.numero_ostacoli=0;
-			this.percentuale_celle_attraversabili=percentuale_celle_attraversabili;
-			this.fattore_agglomerazione_ostacoli=fattore_agglomerazione_ostacoli;
-
-			G=generatoreGriglia();
-			
-			// aggiorno la lista dei vertici validi
-			for (int i = 0; i < dimensioni.getRighe(); i++) {
-				for (int j = 0; j < dimensioni.getColonne(); j++) {
-					if(!G[i][j].isOstacolo())
-						listaVerticiValidi.add(G[i][j]);
-				}
-			}
-			
-		}
+		this.dimensioni= new Dimensioni(dimensioni.getRighe(),dimensioni.getColonne());
+		this.numero_ostacoli_MAX=(int) (dimensioni.getRighe()*dimensioni.getColonne()*(1.0-percentuale_celle_attraversabili));
+		this.numero_ostacoli=0;
+		this.percentuale_celle_attraversabili=percentuale_celle_attraversabili;
+		this.fattore_agglomerazione_ostacoli=fattore_agglomerazione_ostacoli;
+		G=generatoreGriglia();
 	}
 
 	// inizializzo vertici come NON ostacoli
@@ -78,7 +62,7 @@ public class Griglia {
 			for (int j = 0; j < dimensioni.getColonne(); j++) {
 				Vertice v =new Vertice(i,j, false);
 				G[i][j]=v;
-				listaOstacoli.add(v);
+				listaVerticiValidi.add(v);
 			}
 		}
 	}
@@ -91,7 +75,7 @@ public class Griglia {
     // Posiziona agglomerato di ostacoli nelle celle vicine
     private void placeObstacleCluster(int row, int col, double fattore_agglomerazione_ostacoli) {
     	Random random = new Random();
-        int clusterSize = (int) 1+random.nextInt((int) Math.ceil((fattore_agglomerazione_ostacoli/10)*dimensioni.getRighe()*dimensioni.getColonne())); // Dimensione del cluster casuale (da 2 a fattore di agglomerazione)
+        int clusterSize = (int) 1+random.nextInt((int) Math.ceil((fattore_agglomerazione_ostacoli/10)*dimensioni.getRighe()*dimensioni.getColonne()));
 
         // la dimesnione del cluster non puï¿½ sforarare il numero di celle attraversabili
         if (clusterSize+numero_ostacoli>numero_ostacoli_MAX)
@@ -103,15 +87,16 @@ public class Griglia {
 
             int newRow = row + yOffset;
             int newCol = col + xOffset;
-            
+
             // Verifica se la nuova cella è valida e vuota
             if (isValidCell(newRow, newCol) ) {
-            	if(G[newRow][newCol].isOstacolo()==false) {
+            	if(!G[newRow][newCol].isOstacolo()) {
             		G[newRow][newCol].setOstacolo(true);
             		numero_ostacoli+=1;
-            		listaOstacoli.remove(G[newRow][newCol]);
-            		
+            		listaVerticiValidi.remove(G[newRow][newCol]);
             	}
+				row=newRow;
+				col=newCol;
             	clusterSize--;
             }
             
@@ -130,7 +115,7 @@ public class Griglia {
             int newCol = col + dir[1];
 
             // Verifica se la nuova posizione è all'interno dei limiti della griglia
-            if (newRow >= 0 && newRow < dimensioni.getRighe() && newCol >= 0 && newCol < dimensioni.getColonne()) {
+            if (isValidCell(newRow,newCol)) {
                 // Verifica se NON c'è un ostacolo nella cella adiacente
                 if (!G[newRow][newCol].isOstacolo()) {
                 	if((dir[0] == -1 || dir[0] == 1) && (dir[1] == -1 || dir[1] == 1))
@@ -140,40 +125,29 @@ public class Griglia {
                 }
             }
         }
-
-        
     }
     
 	private Vertice[][] generatoreGriglia() {
-		
 		G=new Vertice[dimensioni.getRighe()][dimensioni.getColonne()];
 		Random random = new Random();
 		double percentuale_ostacoli= 1-percentuale_celle_attraversabili;
-		
-		// inizializzo vertici a 
 		inizializzaVerticiGriglia();
-		
-		
 		while(numero_ostacoli<numero_ostacoli_MAX) {
-		Vertice r= listaOstacoli.get(random.nextInt(listaOstacoli.size()));
+		Vertice r= listaVerticiValidi.get(random.nextInt(listaVerticiValidi.size()));
                 // Genera un valore casuale tra 0 e 1
                 double rv = random.nextDouble();
-
-                // Verifica se la cella deve contenere un ostacolo in base alla densità specificata
+                // Verifica se la cella deve contenere un ostacolo
                 boolean hasObstacle = rv <= percentuale_ostacoli;
-                
-                if (hasObstacle && numero_ostacoli<numero_ostacoli_MAX) {
+                if (hasObstacle) {
                     // Posiziona l'ostacolo
                 	if(!G[r.getX()][r.getY()].isOstacolo()) {
                     // Agglomerazione ostacolo
                     if (rv <= fattore_agglomerazione_ostacoli) {
-                        // Posiziona altri ostacoli nelle celle vicine
                         placeObstacleCluster(r.getX(), r.getY(), fattore_agglomerazione_ostacoli);
                     }
                 	}
                 }
             }
-		
 		inizializza_matrice_W();
 		return G;	
 	}
@@ -285,7 +259,7 @@ public class Griglia {
 	}
 	
 	public double h(Vertice vertice, Vertice goal) {
-		
+
 		// distanza diagonale
 		double dx= Math.abs(vertice.getX()-goal.getX());
 		double dy= Math.abs(vertice.getY()-goal.getY());
@@ -313,15 +287,12 @@ public class Griglia {
     }
 
     public ReachGoal ReachGoal(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
-    	
     	// Liste di stati
     	open = new ArrayList<>();
     	closed=new ArrayList<>();
-    			
     	// Strutture dati
     	g= new HashMap<>();
     	f= new HashMap<>();
-    			
     	// Stato, Stato padre
     	P= new HashMap<>();
     	
@@ -479,36 +450,31 @@ public class Griglia {
 			int t=minStato.getIstante_temporale();
 			Vertice v=minStato.getVertice();
 			
-			// ALTERNATIVA -------------------------------------
-			
+			// ALTERNATIVA ------------------------------------
 			// ottengo percorso da v a goal sfruttando djikstra
 			if(allPath.containsKey(v)) {
 				Percorso p= new Percorso(allPath.get(v).getPercorso(),v,goal);
 				
-		    	if(this.isConflitto(p, agenti,t)==false) {
+		    	if(!this.isConflitto(p, agenti, t)) {
 		    		List<Stato> res= ReconstructPath(init, v, P, t);
 		    		// aggiorno l'istante temporale del percorso
 					p=aggiornaIstantiTemporali(p,t);
 					//inserisco i vertici dopo v
-					if(v.equals(goal) == false && res != null) {
+					if(!v.equals(goal) && res!=null) {
 		    		for (int i = 1; i < p.getPercorso().size(); i++) {
-						res.add(p.getPercorso().get(i));
-					}
+						res.add(p.getPercorso().get(i));}
 					Percorso l= new Percorso(res,init,goal);
-					// ho creato un percorso il cui istante temporale > max
-					if (l.getPercorso().get(l.getPercorso().size()-1).getIstante_temporale()>max) {
-						System.err.println("Percorso Rilassato - Errore superato l'orizzonte temporale max!");
-						return null;
-					}
-					for (int i = 0; i < res.size()-1; i++) {
-							// wait
-						if(res.get(i).getVertice().equals(res.get(i+1).getVertice()))
-							wait++;
-					}
-		    		return new ReachGoal(res, P.size(), closed.size(), res.size()-1, l.getPeso(), wait);
+					// controllo di non oltrepasssare il massimo istante temporale
+						if (l.getPercorso().get(l.getPercorso().size()-1).getIstante_temporale()<=max) {
+							for (int i = 0; i < res.size()-1; i++) {
+								// wait
+								if(res.get(i).getVertice().equals(res.get(i+1).getVertice()))
+									wait++;
+							}
+							return new ReachGoal(res, P.size(), closed.size(), res.size()-1, l.getPeso(), wait);
+						}
 					}
 		    	}
-		    	
 			}
 	    	// --- FINE ALTERNATIVA ------------
 			// parte 3
@@ -563,31 +529,20 @@ public class Griglia {
     //  algoritmo percorso rilassato (Djkstra)
     public void Dijkstra(Griglia G, Vertice goal) {
 	// inizialize single source => implicita quando creo un vertice
-	
 	List<Vertice> S=new ArrayList<>();
 	Queue<Vertice> Q=new PriorityQueue<>();
-	
 	// setto vertice di partenza
 	this.G[goal.getX()][goal.getY()].setPeso(0);
-	
-	// aggiugo tutti gli elementi della griglia
+	// aggiungo tutti gli elementi della griglia
 	for (int i = 0; i < dimensioni.getRighe(); i++) {
 		for (int j = 0; j < dimensioni.getColonne(); j++) {
 			if(!this.G[i][j].isOstacolo()) {
-				Q.add(this.G[i][j]);
-				
-			}
-		}
-	}
-	
+				Q.add(this.G[i][j]);}}}
 	while (!Q.isEmpty()){
 		Vertice u= Q.poll();
-		
 		S.add(u);
-		
 		for(Vertice v: u.getListaAdiacenza().keySet()){
 			// effettuo il relax
-			
 			//d[v] > d[u] + w(u, v)
 			if(v.getPeso()> u.getPeso()+ u.getListaAdiacenza().get(v)) {
 				// elimino elemento prima di aggiornarlo
@@ -597,51 +552,35 @@ public class Griglia {
 				// aggiorno la struttura G per essere reperibile 
 				this.G[v.getX()][v.getY()].setPeso(v.getPeso());
 				this.G[v.getX()][v.getY()].setPadre(v.getPadre());
-				// aggiorno con il nuovo elemento
-				Q.add(v);
-			}
-		}	
-	}
+				// inserisco in Q il nuovo elemento
+				Q.add(v);}}}
 	
 	// creo la struttura con i percorsi da goal a tutti i vertici del grafo
-	
-	for (int i = 0; i < dimensioni.getRighe(); i++) {
-		 for (int j = 0; j < dimensioni.getColonne(); j++) {
-			 
-			 if(this.G[i][j].isOstacolo()==false) {
+		for (Vertice v:S){
 			List<Stato> p=new ArrayList<>();
 			 // creo la lista di vertici
-			 Vertice last=this.G[i][j];
-			 Vertice init=this.G[i][j];
+			 Vertice last=v;
+			 Vertice init=v;
 			 int t=0;
 			 p.add(new Stato(last,t));
 			
-			// variabile per specificare se il percorso che creo ï¿½ valido
+			// variabile per specificare se il percorso che creo è valido
 			boolean valido=true;
-			
-			// continuo ad inserire finchï¿½ diverso da goal
-			
+			// continuo ad inserire finchè diverso da goal
 			while(!last.equals(goal)) {
 				// aggiungo padre dell'ultimo elemento
 				p.add(new Stato(last.getPadre(),p.get(p.size()-1).getIstante_temporale()+1));
 				last=last.getPadre();
 				if(last==null) {
 					valido=false;
-					break;
-				}
-			}
+					break;}}
 			if(valido==true) {
 				Percorso pr=new Percorso(p, init, goal);
 				// inserisco il percorso nella variabile globale
-				allPath.put(init, pr);
-			}
-		}
-		 }
-	}
-	
-	
-	
-}
+				allPath.put(init, pr);}}}
+
+
+
 
     // algoritmo per il controllo dei conflitti cammini preesistenti, restituisce true se trova un conflitto
     
@@ -675,12 +614,11 @@ public class Griglia {
     
     public Vertice[] generaInitGoal(int max) {
 	   
-	   // indici init
+	   // indice init
        int i;
-       //indici goal
+       //indice goal
        int g;
        do {
-       
     	  // INIT - controllo che non sia un ostacolo
     	Random random = new Random();
     	i = random.nextInt(listaVerticiValidi.size());
@@ -700,15 +638,14 @@ public class Griglia {
     	int i=0;
 		int j=1;
 
-		
     	while(i<numero_agenti && max< (maxAss + istanti_max)) {
     		for (Percorso p : percorsi) {
     			if(istanti_max<p.getPercorso().size())
     				istanti_max=p.getPercorso().size();
     		}
-    		
     		if(j>10){
-				System.err.println("Numero massimo iterazioni per ricerca agenti raggiunto. Non è possibile generare "+ numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
+				System.err.println("Numero massimo iterazioni per ricerca agenti raggiunto. Non è possibile generare "+
+						numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
 				break;
 			} else{
 			Vertice init,goal;
@@ -724,7 +661,6 @@ public class Griglia {
 					j++;
 				}
     		}
-    		
     		if(t!= null && t.getPercorso()!=null && !t.getPercorso().contains(null)) {
     			System.out.println("Trovato il percorso dell'agente "+i + " con un numero "+ j + " di invocazioni di ReachGoal");
 				percorsi.add(new Percorso(t.getPercorso(),init,goal));

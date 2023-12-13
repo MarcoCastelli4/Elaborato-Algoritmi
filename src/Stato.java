@@ -8,8 +8,7 @@ public class Stato {
 		setIstante_temporale(istante_temporale);
 		setVertice(vertice);
 	}
-	
-	
+
 	public int getIstante_temporale() {
 		return istante_temporale;
 	}

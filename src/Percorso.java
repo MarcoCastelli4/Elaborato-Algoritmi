@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 public class Percorso {
 
 	private List<Stato> percorso=new ArrayList<>();
-
 	private Vertice init;
 	private Vertice goal;
 	private float peso;
