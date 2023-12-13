@@ -52,6 +52,10 @@ public class Main {
 		System.out.println("Dimensione della griglia utilizzata: " + dimensioni.getRighe() + " x " +dimensioni.getColonne());
 		System.out.println("La griglia ha " + griglia.getPercentuale_celle_attraversabili() +  " % di celle attraversabili con un fattore di agglomerazione di:  " + griglia.getFattore_agglomerazione_ostacoli());
 		System.out.println("Andremo a creare " + numero_agenti + " agenti con un orizzonte temporale max di " + max);
+
+		// Record start time
+		long startTime = System.currentTimeMillis();
+
 		agenti=griglia.generatoreIstanze(numero_agenti,max);
 		// stampo i percorsi degli agenti
 		griglia.printAgenti();
@@ -106,7 +110,25 @@ public class Main {
 			System.out.println("\nAlternativa - Percorso n+1 trovato!");
 			griglia.printPercorso(alt);
 		}
-		
+
+		// Record end time
+		long endTime = System.currentTimeMillis();
+
+		// Calculate and print execution time
+		long executionTime = endTime - startTime;
+		System.out.println("Execution Time: " + executionTime + " milliseconds");
+
+		// Get memory usage
+		long totalMemory = Runtime.getRuntime().totalMemory();
+		long freeMemory = Runtime.getRuntime().freeMemory();
+		long usedMemory = totalMemory - freeMemory;
+
+		// Print memory usage
+		System.out.println("Total Memory: " + totalMemory + " bytes");
+		System.out.println("Free Memory: " + freeMemory + " bytes");
+		System.out.println("Used Memory: " + usedMemory + " bytes");
+
+
 	}
 
 }
