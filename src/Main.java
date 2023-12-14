@@ -41,7 +41,7 @@ public class Main {
 
 		int scelta=0;
 		do{
-		System.out.println("SCELTA GOAL: \n 1->goal generato casualmente \n 2->personalizzato:");
+		System.out.println("SCELTA INIT-GOAL: \n 1->Generazione casuale \n 2->Personalizzato:");
 		scelta=scanner.nextInt();
 		}while(scelta!=1 && scelta!=2);
 
@@ -114,19 +114,14 @@ public class Main {
 		// Record end time
 		long endTime = System.currentTimeMillis();
 
-		// Calculate and print execution time
-		long executionTime = endTime - startTime;
-		System.out.println("Execution Time: " + executionTime + " milliseconds");
+		System.out.println("Execution Time: " + (endTime-startTime) + " milliseconds");
 
 		// Get memory usage
 		long totalMemory = Runtime.getRuntime().totalMemory();
 		long freeMemory = Runtime.getRuntime().freeMemory();
-		long usedMemory = totalMemory - freeMemory;
 
 		// Print memory usage
-		System.out.println("Total Memory: " + totalMemory + " bytes");
-		System.out.println("Free Memory: " + freeMemory + " bytes");
-		System.out.println("Used Memory: " + usedMemory + " bytes");
+		System.out.println("Used Memory: " + (totalMemory-freeMemory) + " bytes");
 
 
 	}

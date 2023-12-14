@@ -287,7 +287,13 @@ public class Griglia {
     }
 
     public ReachGoal ReachGoal(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
-    	// Liste di stati
+
+		// Record start time
+		long startReachGoal = System.currentTimeMillis();
+		long ReachGoalMemoryStart = Runtime.getRuntime().totalMemory();
+
+
+		// Liste di stati
     	open = new ArrayList<>();
     	closed=new ArrayList<>();
     	// Strutture dati
@@ -340,6 +346,12 @@ public class Griglia {
 					if(r.getPercorso().get(i).getVertice().equals(r.getPercorso().get(i+1).getVertice()))
 						wait++;
 				}
+				// Record start time
+				long endReachGoal = System.currentTimeMillis();
+				long ReachGoalMemoryEnd = Runtime.getRuntime().freeMemory();
+				System.out.println("REACH GOAL Time: " + (endReachGoal-startReachGoal) + " milliseconds");
+				System.out.println("REACH GOAL Used Memory: " + (ReachGoalMemoryStart-ReachGoalMemoryEnd)  +" bytes");
+
 				return new ReachGoal(r.getPercorso(), P.size(),closed.size(), r.getPercorso().size()-1,r.getPeso(), wait);
 			}
 			
@@ -389,7 +401,11 @@ public class Griglia {
 	}
     
     public ReachGoal ReachGoalAlternativo(Griglia G, List<Percorso> agenti, Vertice init,Vertice goal, int max){
-    	
+
+		// Record start time
+		long startReachGoalAlt = System.currentTimeMillis();
+		long ReachGoalAltMemoryStart = Runtime.getRuntime().totalMemory();
+
     	// Liste di stati
     	open = new ArrayList<>();
     	closed=new ArrayList<>();
@@ -471,6 +487,12 @@ public class Griglia {
 								if(res.get(i).getVertice().equals(res.get(i+1).getVertice()))
 									wait++;
 							}
+							// Record start time
+							long endReachGoalAlt = System.currentTimeMillis();
+							long ReachGoalAltMemoryEnd = Runtime.getRuntime().freeMemory();
+							System.out.println("REACH GOAL ALTERNATIVA Time: " + (endReachGoalAlt-startReachGoalAlt) + " milliseconds");
+							System.out.println("REACH GOAL ALTERNATIVA Used Memory: " + (ReachGoalAltMemoryStart-ReachGoalAltMemoryEnd)  +" bytes");
+
 							return new ReachGoal(res, P.size(), closed.size(), res.size()-1, l.getPeso(), wait);
 						}
 					}
@@ -528,6 +550,10 @@ public class Griglia {
     
     //  algoritmo percorso rilassato (Djkstra)
     public void Dijkstra(Griglia G, Vertice goal) {
+		// Record start time
+		long startDijkstra = System.currentTimeMillis();
+		long DijkstraMemoryStart = Runtime.getRuntime().totalMemory();
+
 	// inizialize single source => implicita quando creo un vertice
 	List<Vertice> S=new ArrayList<>();
 	Queue<Vertice> Q=new PriorityQueue<>();
@@ -577,9 +603,14 @@ public class Griglia {
 			if(valido==true) {
 				Percorso pr=new Percorso(p, init, goal);
 				// inserisco il percorso nella variabile globale
-				allPath.put(init, pr);}}}
+				allPath.put(init, pr);
 
-
+			}}
+		// Record start time
+		long endDijkstra = System.currentTimeMillis();
+		long DijkstraMemoryEnd = Runtime.getRuntime().freeMemory();
+		System.out.println("Dijkstra Time: " + (endDijkstra-startDijkstra) + " milliseconds");
+		System.out.println("Dijkstra Used Memory: " + (DijkstraMemoryStart-DijkstraMemoryEnd)  +" bytes");}
 
 
     // algoritmo per il controllo dei conflitti cammini preesistenti, restituisce true se trova un conflitto
@@ -644,7 +675,7 @@ public class Griglia {
     				istanti_max=p.getPercorso().size();
     		}
     		if(j>10){
-				System.err.println("Numero massimo iterazioni per ricerca agenti raggiunto. Non è possibile generare "+
+				System.err.println("Numero massimo iterazioni per ricerca agenti raggiunto. Non e' possibile generare "+
 						numero_agenti + " agenti, sono stati generati solo "+i+" agenti");
 				break;
 			} else{

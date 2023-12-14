@@ -5,9 +5,9 @@ public class TestMain {
 
     public static void main(String[] args) {
         int max=10;
-        int numero_agenti=4;
-        Dimensioni dimensioni=new Dimensioni(10,10);
-        Griglia griglia= new Griglia(dimensioni, 0.5, 0.4);
+        int numero_agenti=2;
+        Dimensioni dimensioni=new Dimensioni(30,30);
+        Griglia griglia= new Griglia(dimensioni, 0.7, 0.4);
         List<Percorso> agenti= new ArrayList<Percorso>();
 
         System.out.println("Dimensione della griglia utilizzata: " + dimensioni.getRighe() + " x " +dimensioni.getColonne());
@@ -27,6 +27,7 @@ public class TestMain {
 
         // REACH GOAL ORIGINALE
         ReachGoal pri=griglia.ReachGoal(griglia, agenti,v[0], v[1], max);
+
         if(pri == null || pri.getPercorso() == null ){
             System.err.println("ERRORE: Percorso dell'agente n+1 non trovato!!!");
         }else{
@@ -50,7 +51,6 @@ public class TestMain {
 
         // Record end time
         long endTime = System.currentTimeMillis();
-
         // Calculate and print execution time
         long executionTime = endTime - startTime;
         System.out.println("Execution Time: " + executionTime + " milliseconds");
@@ -59,11 +59,7 @@ public class TestMain {
         long totalMemory = Runtime.getRuntime().totalMemory();
         long freeMemory = Runtime.getRuntime().freeMemory();
         long usedMemory = totalMemory - freeMemory;
-
-        // Print memory usage
-        System.out.println("Total Memory: " + totalMemory + " bytes");
-        System.out.println("Free Memory: " + freeMemory + " bytes");
-        System.out.println("Used Memory: " + usedMemory + " bytes");
+        System.out.println("Used Memory: " + usedMemory  + " bytes");
 
     }
 
